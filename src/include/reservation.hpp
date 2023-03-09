@@ -2,6 +2,7 @@
 #define RESERVATION_HPP
 
 #include <string>
+#include "date.hpp"
 class Reservation
 {
 public:

@@ -19,7 +19,6 @@ public:
     Hotel();
     ~Hotel();
     void addRoom(int roomNo, int maxCapacity, int freeCapacity, int price, bool isFull);
-    void setDate(std::string& date);
     void addReservation(int roomNo, int userId, std::string &reserveDate, std::string &checkOutDate, int numOfBeds);
     // bool isDateValid(std::string& date);
     User* findUser(int userFd);
@@ -27,11 +26,12 @@ public:
     json viewRooms(bool isUserAdmin);
     void addRooms(json& rooms);
     void addUsers(json& users);
+    void setDate(date::year_month_day date);
 private:
     std::unordered_map<int, User> users_;
     std::unordered_map<int, std::vector<Reservation>> reservations_;
     std::unordered_map<int, Room> rooms_;
-    std::string date_;
+    date::year_month_day date_;
     int lastAssignedId_;
 };
 #endif

@@ -85,7 +85,9 @@ std::vector<std::string> Server::tokenizeCommand(std::string command)
 void Server::setServerDate(std::string date)
 {
     std::istringstream ss(date);
+    date::year_month_day serverDate;
     ss >> date::parse("%F", serverDate);
+    commandHandler_.setDate(serverDate);
 }
 
 bool Server::checkDate(std::string date)

@@ -69,10 +69,6 @@ void Hotel::addRoom(int roomNo, int maxCapacity, int freeCapacity, int price, bo
    rooms_.insert({roomNo, room});
 }
 
-void Hotel::setDate(std::string& date)
-{
-    date_ = date;
-}
 
 void Hotel::addReservation(int roomNo, int userId, std::string &reserveDate, std::string &checkOutDate, int numOfBeds)
 {
@@ -151,4 +147,9 @@ json Hotel::viewRooms(bool isUserAdmin)
         roomsInfo.push_back(roomInfo);
     }
     return roomsInfo;
+}
+
+void Hotel::setDate(date::year_month_day date)
+{
+    date_ = date;
 }

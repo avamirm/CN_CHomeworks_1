@@ -35,6 +35,7 @@ public:
     void setUsers(json& users);
 
     json runCommand(json command, int userFd);
+    void setDate(date::year_month_day date);
     // bool doesUsernameExist
 
 private:

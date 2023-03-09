@@ -27,10 +27,10 @@ $(PATH_OBJ)/server.o: server.cpp server.hpp commandHandler.hpp hotel.hpp user.hp
 $(PATH_OBJ)/client.o: client.cpp client.hpp json.hpp date.hpp
 	$(CC) -c $< -o $@	
 
-$(PATH_OBJ)/commandHandler.o: commandHandler.cpp commandHandler.hpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp
+$(PATH_OBJ)/commandHandler.o: commandHandler.cpp commandHandler.hpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp date.hpp
 	$(CC) -c $< -o $@
 
-$(PATH_OBJ)/hotel.o: hotel.cpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp
+$(PATH_OBJ)/hotel.o: hotel.cpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp date.hpp
 	$(CC) -c $< -o $@
 
 $(PATH_OBJ)/user.o: user.cpp user.hpp json.hpp

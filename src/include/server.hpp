@@ -46,7 +46,6 @@ private:
     CommandHandler commandHandler_;
     int port_;
     std::string hostname_;
-    date::year_month_day serverDate;
 };
 
 #endif

@@ -16,6 +16,11 @@ void CommandHandler::setUsers(json& users)
     hotel_.addUsers(users);
 }
 
+void CommandHandler::setDate(date::year_month_day date)
+{
+    hotel_.setDate(date);
+}
+
 json CommandHandler::runCommand(json command, int userFd)
 {
     json respond;
