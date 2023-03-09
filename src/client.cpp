@@ -1,4 +1,4 @@
-#include "Client.hpp"
+#include "include/client.hpp"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <iostream>
+#include <fstream>
 
 Client::Client()
 {
@@ -21,7 +22,7 @@ int Client::connectServer(const int port, const std::string host)
 
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
-    server_address.sin_addr.s_addr = inet_addr(host);
+    server_address.sin_addr.s_addr = inet_addr(host.c_str());
 
     if (connect(fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
     {
@@ -68,13 +69,17 @@ std::vector<std::string> Client::tokenizeCommand(std::string command)
     return tokens;
 }
 
-std::string Client::run()
+void Client::run()
 {
-    const std::string configFilePath = "config.json";
-    Configuration config(configFilePath);
+   // Configuration config(configFilePath);
     std::string command;
     int commandFd;
-    commandFd = connectServer(config.getCommandPort(), config.getHostName());
+    std::ifstream fin(CONFIG_FILE);
+    json j;
+    fin >> j;
+    int port = j["commandChannelPort"].get<int>();
+    std::string hostname = j["hostName"].get<std::string>();
+    commandFd = connectServer(port, hostname);
     char readBuffer[1024];
     std::vector<std::string> tokens;
     bool isRoom = false, isLeavingRoom = false, isLogin = false;
@@ -181,15 +186,15 @@ std::string Client::run()
             recv(commandFd, readBuffer, sizeof(readBuffer), 0);
             nlohmann::json recvMessage = json::parse(readBuffer);
             std::cout << "\u2022 User Info:" << std::endl
-                      << "  ID:        " << info["id"] << std::endl
-                      << "  Username:  " << info["username"] << std::endl
-                      << "  Password:  " << info["password"] << std::endl
-                      << "  Admin:     " << info["isAdmin"] << std::endl;
-            if (info["isAdmin"])
+                      << "  ID:        " << recvMessage["id"] << std::endl
+                      << "  Username:  " << recvMessage["username"] << std::endl
+                      << "  Password:  " << recvMessage["password"] << std::endl
+                      << "  Admin:     " << recvMessage["isAdmin"] << std::endl;
+            if (recvMessage["isAdmin"])
             {
-                std::cout << "  Phone:     " << info["phoneNumber"] << std::endl
-                          << "  Money:     " << info["money"] << std::endl
-                          << "  Address:   " << info["address"] << std::endl;
+                std::cout << "  Phone:     " << recvMessage["phoneNumber"] << std::endl
+                          << "  Money:     " << recvMessage["money"] << std::endl
+                          << "  Address:   " << recvMessage["address"] << std::endl;
             }
         }
 
@@ -211,14 +216,14 @@ std::string Client::run()
                 std::cout << recvMessage["errorMessage"] << std::endl;
             }
             std::cout << "\u2022 User Info:" << std::endl
-                      << "  ID:        " << info["id"] << std::endl
-                      << "  Username:  " << info["username"] << std::endl
-                      << "  Admin:     " << info["isAdmin"] << std::endl;
-            if (info["isAdmin"])
+                      << "  ID:        " << recvMessage["id"] << std::endl
+                      << "  Username:  " << recvMessage["username"] << std::endl
+                      << "  Admin:     " << recvMessage["isAdmin"] << std::endl;
+            if (recvMessage["isAdmin"])
             {
-                std::cout << "  Phone:     " << info["phoneNumber"] << std::endl
-                          << "  Money:     " << info["money"] << std::endl
-                          << "  Address:   " << info["address"] << std::endl;
+                std::cout << "  Phone:     " << recvMessage["phoneNumber"] << std::endl
+                          << "  Money:     " << recvMessage["money"] << std::endl
+                          << "  Address:   " << recvMessage["address"] << std::endl;
             }
         }
 
@@ -236,17 +241,17 @@ std::string Client::run()
             recv(commandFd, readBuffer, sizeof(readBuffer), 0);
             nlohmann::json recvMessage = json::parse(readBuffer);
             std::cout << "\u2022 Rooms Info: " << std::endl
-                      << "  Number:         " << roomInfo["roomNo"] << std::endl
-                      << "  Price:          " << roomInfo["price"] << std::endl
-                      << "  Max Capacity:   " << roomInfo["maxCapacity"] << std::endl
-                      << "  Free Capacity:  " << roomInfo["freeCapacity"] << std::endl;
-            for (auto &user : roomInfo["users"])
+                      << "  Number:         " << recvMessage["roomNo"] << std::endl
+                      << "  Price:          " << recvMessage["price"] << std::endl
+                      << "  Max Capacity:   " << recvMessage["maxCapacity"] << std::endl
+                      << "  Free Capacity:  " << recvMessage["freeCapacity"] << std::endl;
+            for (auto &user : recvMessage["users"])
             {
                 std::cout << "\u2022 Users: " << std::endl
-                          << "  User ID:         " << usersInfo["userId"] << std::endl
-                          << "  Number of Beds:  " << usersInfo["numOfBeds"] << std::endl
-                          << "  Reserve Date:    " << usersInfo["reserveDate"] << std::endl
-                          << "  CheckOut Date:   " << usersInfo["checkOutDate"] << std::endl;
+                          << "  User ID:         " << user["userId"] << std::endl
+                          << "  Number of Beds:  " << user["numOfBeds"] << std::endl
+                          << "  Reserve Date:    " << user["reserveDate"] << std::endl
+                          << "  CheckOut Date:   " << user["checkOutDate"] << std::endl;
             }
         }
 
@@ -527,4 +532,10 @@ std::string Client::run()
             nlohmann::json recvMessage = json::parse(readBuffer);
         }
     }
+}
+
+int main()
+{
+    Client client;
+    client.run();
 }

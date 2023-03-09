@@ -1,30 +1,32 @@
-#include "server.hpp"
+#include "include/server.hpp"
+#include <fstream> 
 
 using namespace std;
 
 Server::Server()
 {
     readPortHostnameConfig();
-    rooms = readRoomsConfig();
-    users = readUsersConfig();
-    CommandHandler commandHandler();
+    json rooms = readRoomsConfig();
+    json users = readUsersConfig();
+    CommandHandler commandHandler = CommandHandler();
     commandHandler_ = commandHandler;
     commandHandler_.setRooms(rooms);
     commandHandler_.setUsers(users);
-    cout << "Server is running on port " << port << endl;
+    cout << "Server is running on port " << port_ << endl;
 }
+
 void Server::readPortHostnameConfig()
 {
-    ifstream fin(CONFIG_FILE);
+    std::ifstream fin(CONFIG_FILE);
     json j;
     fin >> j;
-    port = j["commandChannelPort"].get<int>();
-    hostname = j["hostName"].get<std::string>();
+    port_ = j["commandChannelPort"].get<int>();
+    hostname_ = j["hostName"].get<std::string>();
 }
 
 json Server::readRoomsConfig()
 {
-    ifstream fin(ROOMS_FILE);
+    std::ifstream fin(ROOMS_FILE);
     json rooms;
     fin >> rooms;
     return rooms;
@@ -32,7 +34,7 @@ json Server::readRoomsConfig()
 
 json Server::readUsersConfig()
 {
-    ifstream fin(USERS_FILE);
+    std::ifstream fin(USERS_FILE);
     json users;
     fin >> users;
     return users;
@@ -101,14 +103,12 @@ bool Server::checkDate(std::string date)
 
 void Server::start()
 {
-    const std::string config_file_path = "config.json";
-    Configuration configuration(config_file_path);
 
-    int command_fd;
+    int server_fd, max_sd , new_socket;
     char buffer[1024] = {0};
     fd_set master_set, working_set;
 
-    command_fd = setupServer();
+    server_fd = setupServer();
 
     FD_ZERO(&master_set);
     max_sd = server_fd;
@@ -165,7 +165,7 @@ void Server::start()
                     int bytes_received;
                     bytes_received = recv(i, buffer, 1024, 0);
                     nlohmann::json message = json::parse(buffer);
-                    commandHandler_.runCommand(message, server_fd);
+                    commandHandler_.runCommand(message, new_socket);
                     if (bytes_received == 0)
                     { // EOF
                         printf("client fd = %d closed\n", i);
@@ -180,4 +180,10 @@ void Server::start()
             }
         }
     }
+}
+
+int main()
+{
+    Server server;
+    server.start();
 }

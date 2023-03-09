@@ -1,21 +1,23 @@
-#ifndef __ROOM_H__
-#define __ROOM_H__
+#ifndef ROOM_HPP
+#define ROOM_HPP
 
 #include <string>
 #include <vector>
-#include "User.hpp"
 
 class Room
 {
 public:
-    Room(int roomNo, int maxCapacity, int price);
+    Room(int roomNo, int maxCapacity, int freeCapacity, int price, bool isFull);
     ~Room();
     int getRoomNo();
+    int getMaxCapacity();
+    int getFreeCapacity();
     // int getMaxUser();
+    bool getIsFull();
     int getPrice();
 
 private:
-    int roomNo;
+    int roomNo_;
     int maxCapacity_;
     int price_;
     int freeCapacity_;

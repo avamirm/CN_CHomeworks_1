@@ -1,13 +1,10 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
-#include "date.h"
-#include "User.hpp"
-#include "CommandHandler.hpp"
+#include "commandHandler.hpp"
 
 #include <vector>
 #include <string.h>
-#include <thread>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -15,7 +12,8 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <iostream>
-#include <date.h>
+#include "date.hpp"
+#include <chrono>
 #include <sstream>
 
 #define ROOMS_FILE "RoomsInfo.json"
@@ -40,12 +38,14 @@ public:
     void setServerDate(std::string date);
     void readPortHostnameConfig();
     json readRoomsConfig();
-    json readUserConfig();
+    json readUsersConfig();
+    std::vector<std::string> tokenizeCommand(std::string command);
+    int setupServer();
 
 private:
     CommandHandler commandHandler_;
     int port_;
-    std::string hostName_;
+    std::string hostname_;
     date::year_month_day serverDate;
 };
 

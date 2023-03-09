@@ -1,5 +1,5 @@
-#ifndef __RESERVATION_H__
-#define __RESERVATION_H__
+#ifndef RESERVATION_HPP
+#define RESERVATION_HPP
 
 #include <string>
 class Reservation
@@ -8,15 +8,17 @@ public:
     Reservation(int roomNo, int userId, std::string &reserveDate, std::string &checkOutDate, int numOfBeds);
     ~Reservation();
     // int getRoomNo();
-    // int getUserNo();
-    // int getPrice();
+    int getUserId();
+    std::string getReserveDate();
+    std::string getCheckOutDate();
+    int getNumOfBeds();
     // int getCheckIn();
     // int getCheckOut();
 private:
     int roomNo_;
     int userId_;
     std::string reserveDate_;
-    std::string checkInDate_;
+    std::string checkOutDate_;
     int numOfBeds_;
 };
 

@@ -1,20 +1,19 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
 
-#include "Configuration.hpp"
-#include "date.h"
 #include "json.hpp"
 
 #include <sstream>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <date.h>
-#include <json.hpp>
+#include "date.hpp"
+#include <chrono>
 
 #define SET_TIME "setTime"
 #define SIGN_IN "signin"
 #define SIGN_UP "signup"
+#define CONFIG_FILE "config.json"
 
 // #define VIEW_USER_INFORMATION "View user information"
 // #define VIEW_ALL_USERS "View all users"
@@ -26,6 +25,7 @@
 // #define LEAVING_ROOM "Leaving room"
 // #define ROOMS "Rooms"
 // #define LOGOUT "Logout"
+using json = nlohmann::json;
 
 #define VIEW_USER_INFORMATION "1"
 #define VIEW_ALL_USERS "2"

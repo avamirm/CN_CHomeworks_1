@@ -1,5 +1,5 @@
-#ifndef __COMMANDHANDLER_H__
-#define __COMMANDHANDLER_H__
+#ifndef COMMAND_HANDLER_HPP
+#define COMMAND_HANDLER_HPP
 
 #include "hotel.hpp"
 
@@ -13,6 +13,7 @@
 #define LEAVING_ROOM "8"
 #define ROOMS "9"
 #define LOGOUT "0"
+#define Booking "Booking"
 // enum class Command
 // {
 //     VIEW_USER_INFORMATION,
@@ -30,12 +31,14 @@ class CommandHandler
 {
 public:
     CommandHandler();
-    ~CommandHandler();
-    std::string runCommand(std::string& command);
+    void setRooms(json& rooms);
+    void setUsers(json& users);
+
+    json runCommand(json command, int userFd);
     // bool doesUsernameExist
 
 private:
-    Hotel hotel;
-}
+    Hotel hotel_;
+};
 
 #endif
