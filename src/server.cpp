@@ -60,7 +60,7 @@ int Server::setupServer()
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_addr.s_addr = inet_addr(hostname_.c_str());
     address.sin_port = htons(port_);
 
     bind(server_fd, (struct sockaddr *)&address, sizeof(address));
@@ -93,16 +93,50 @@ void Server::setServerDate(std::string date)
 bool Server::checkDate(std::string date)
 {
     // istringstream ss(date);
+    // date::year_month_day tempServerDate;
+    // std::cin >> date::parse("%F", tempServerDate);
+    // if (!std::cin)
+    // {
+    //     std::cin.clear();
+    //     return false;
+    // }
+    // return true;
+    std::istringstream ss(date);
     date::year_month_day tempServerDate;
-    std::cin >> date::parse("%F", tempServerDate);
-    if (!std::cin)
-    {
-        std::cin.clear();
+    ss >> date::parse("%F", tempServerDate);
+    if (!ss)
         return false;
-    }
     return true;
 }
 
+void Server::setDate()
+{
+    bool isDateCorrect = false;
+    while (!isDateCorrect)
+    {
+        std::string date;
+        printf("Enter the date:\n");
+        std::getline(std::cin, date);
+        std::vector<std::string> tokens = tokenizeCommand(date);
+        if (tokens.size() != 2 || tokens[0] != SET_TIME)
+        {
+            std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+            continue;
+        }
+        else
+        {
+            std::string command = tokens[0];
+            std::string date = tokens[1];
+            if (!checkDate(date))
+            {
+                std::cout << INVALID_VALUE << std::endl;
+                continue;
+            }
+            setServerDate(date);
+            isDateCorrect = true;
+        }
+    }
+}
 void Server::start()
 {
 
@@ -115,61 +149,30 @@ void Server::start()
     FD_ZERO(&master_set);
     max_sd = server_fd;
     FD_SET(server_fd, &master_set);
-
-    printf("server is starting ...\n");
-    bool isDateCorrect = false;
-    while (!isDateCorrect)
-    {
-        std::string date;
-        printf("Enter the date:\n");
-        std::getline(std::cin, date);
-        std::vector<std::string> tokens = tokenizeCommand(date);
-        if (tokens.size() != 2 || tokens[0] != SET_TIME)
-        {
-            std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
-            continue;
-            ;
-        }
-        else
-        {
-            std::string command = tokens[0];
-            std::string date = tokens[1];
-            if (!checkDate(date))
-            {
-                std::cout << INVALID_VALUE << std::endl;
-                continue;
-                ;
-            }
-            setServerDate(date);
-            isDateCorrect = true;
-        }
-    }
+    setDate();
 
     while (1)
     {
         working_set = master_set;
-        select(max_sd + 1, &working_set, NULL, NULL, NULL);
+        if (select(max_sd + 1, &working_set, NULL, NULL, NULL) < 0)
+            perror("select");
 
-        for (int i = 0; i <= max_sd; i++)
+        if (FD_ISSET(server_fd, &working_set))
+        { // new clinet
+            new_socket = acceptClient(server_fd);
+            FD_SET(new_socket, &master_set);
+            if (new_socket > max_sd)
+                max_sd = new_socket;
+            printf("New client connected. fd = %d\n", new_socket);
+        }
+        else
         {
-            if (FD_ISSET(i, &working_set))
+            for (int i = 0; i <= max_sd; i++)
             {
-
-                if (i == server_fd)
-                { // new clinet
-                    new_socket = acceptClient(server_fd);
-                    FD_SET(new_socket, &master_set);
-                    if (new_socket > max_sd)
-                        max_sd = new_socket;
-                    printf("New client connected. fd = %d\n", new_socket);
-                }
-
-                else
-                { // client sending msg
+                if (FD_ISSET(i, &working_set))
+                {
                     int bytes_received;
                     bytes_received = recv(i, buffer, 1024, 0);
-                    nlohmann::json message = json::parse(buffer);
-                    commandHandler_.runCommand(message, new_socket);
                     if (bytes_received == 0)
                     { // EOF
                         printf("client fd = %d closed\n", i);
@@ -177,9 +180,13 @@ void Server::start()
                         FD_CLR(i, &master_set);
                         continue;
                     }
-
+                    nlohmann::json message = json::parse(buffer);
+                    nlohmann::json sendMsg = commandHandler_.runCommand(message, i);
                     printf("client %d: %s\n", i, buffer);
                     memset(buffer, 0, 1024);
+                    std::string sendMsgstr = sendMsg.dump();
+                    if (send(i, sendMsgstr.c_str(), sendMsgstr.size(), 0) < 0)
+                        perror("send");
                 }
             }
         }

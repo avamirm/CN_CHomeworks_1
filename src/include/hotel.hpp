@@ -30,7 +30,7 @@ public:
     void addReservation(int roomNo, int userId, std::string &reserveDate, std::string &checkOutDate, int numOfBeds);
     // bool isDateValid(std::string& date);
     User *findUser(int userFd);
-    User *findUser(std::string username, std::string password);
+    json findUserByName(std::string username, std::string password, int userFd);
     json addUser(json command);
     json viewAllUsers(User *user);
     json viewRooms(bool isUserAdmin);
@@ -43,7 +43,8 @@ public:
     void addRooms(json &rooms);
     void addUsers(json &users);
     void setDate(date::year_month_day date);
-
+    void setUserFd(User* user, int userFd);
+    json checkUsernameExistance(std::string username);
 private:
     std::unordered_map<int, User> users_;
     std::unordered_map<int, std::vector<Reservation>> reservations_;

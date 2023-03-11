@@ -11,22 +11,22 @@ Hotel::~Hotel()
 
 void Hotel::addRooms(json &rooms)
 {
-    for (auto &room : rooms)
+    for (auto room : rooms["rooms"])
     {
-        int roomNo = room["roomNo"];
-        int maxCapacity = room["maxCapacity"];
-        int price = room["price"];
-        bool isFull = room["isFull"];
-        int freeCapacity = room["freeCapacity"];
+        int roomNo = room["roomNo"].get<int>();
+        int maxCapacity = room["maxCapacity"].get<int>();
+        int price = room["price"].get<int>();
+        bool isFull = room["isFull"].get<bool>();
+        int freeCapacity = room["freeCapacity"].get<int>();
         addRoom(roomNo, maxCapacity, freeCapacity, price, isFull);
         if (freeCapacity != maxCapacity)
         {
             for (auto &user : room["users"])
             {
-                int userId = user["id"];
-                std::string reserveDate = user["reserveDate"];
-                std::string checkOutDate = user["checkOutDate"];
-                int numOfBeds = user["numOfBeds"];
+                int userId = user["id"].get<int>();
+                std::string reserveDate = user["reserveDate"].get<std::string>();
+                std::string checkOutDate = user["checkOutDate"].get<std::string>();
+                int numOfBeds = user["numOfBeds"].get<int>();
                 addReservation(roomNo, userId, reserveDate, checkOutDate, numOfBeds);
             }
         }
@@ -38,18 +38,18 @@ void Hotel::addUsers(json &users)
     std::string phoneNumber_;
     std::string address_;
     int money_;
-    for (auto &user : users)
+    for (auto user : users["users"])
     {
-        int id = user["id"];
-        std::string username = user["username"];
-        std::string password = user["password"];
-        bool isAdmin = user["isAdmin"];
+        int id = user["id"].get<int>();
+        std::string username = user["username"].get<std::string>();
+        std::string password = user["password"].get<std::string>();
+        bool isAdmin = user["isAdmin"].get<bool>();
         lastAssignedId_ = std::max(lastAssignedId_, id);
         if (!isAdmin)
         {
-            std::string phoneNumber = user["phoneNumber"];
-            std::string address = user["address"];
-            int money = user["money"];
+            std::string phoneNumber = user["phoneNumber"].get<std::string>();
+            std::string address = user["address"].get<std::string>();
+            int money = user["money"].get<int>();
             User newUser = User(id, username, password, isAdmin, phoneNumber, address, money);
             users_.insert({id, newUser});
         }
@@ -70,15 +70,15 @@ json Hotel::addUser(json user)
     int money_;
     lastAssignedId_ += 1;
     int id = lastAssignedId_;
-    std::string username = user["username"];
-    std::string password = user["password"];
+    std::string username = user["username"].get<std::string>();
+    std::string password = user["password"].get<std::string>();
     // lastAssignedId_ = std::max(lastAssignedId_, id);
-    std::string phoneNumber = user["phoneNumber"];
-    std::string address = user["address"];
-    int money = user["money"];
+    std::string phoneNumber = user["phoneNumber"].get<std::string>();
+    std::string address = user["address"].get<std::string>();
+    int money = stoi(user["money"].get<std::string>());
     User newUser = User(id, username, password, false, phoneNumber, address, money);
     users_.insert({id, newUser});
-    respond['errorMessage'] = USER_SUCCESSFULLY_SIGN_UP;
+    respond["errorMessage"] = USER_SUCCESSFULLY_SIGN_UP;
     return respond;
 }
 
@@ -115,14 +115,21 @@ User *Hotel::findUser(int userFd)
     return nullptr;
 }
 
-User *Hotel::findUser(std::string username, std::string password)
+json Hotel::findUserByName(std::string username, std::string password, int userFd)
 {
+    json response;
+    response["isError"] = "true";
+    response["errorMessage"] = INVALID_USERNAME_OR_PASSWORD;
     for (auto &user : users_)
     {
         if (user.second.getName() == username && user.second.getPassword() == password)
-            return &user.second;
+        {
+            setUserFd(&user.second, userFd);
+            response["isError"] = false;
+            response["errorMessage"] = USER_LOGGED_IN;
+        }
     }
-    return nullptr;
+    return response;
 }
 
 json Hotel::viewAllUsers(User *user)
@@ -144,11 +151,27 @@ json Hotel::viewAllUsers(User *user)
     return usersInfo;
 }
 
+json Hotel::checkUsernameExistance(std::string username)
+{
+    json response;
+    response["isError"] = false;
+    response["errorMessage"] = USER_SIGNED_UP;
+    for (auto user: users_)
+    {
+        if (user.second.getName() == username)
+        {
+            response["isError"] = true;
+            response["errorMessage"] = USER_EXISTED;
+        }
+    }
+    return response;
+}
+
 json Hotel::viewRooms(bool isUserAdmin)
 {
     json roomsInfo;
 
-    roomsInfo = json::array();
+    roomsInfo["rooms"] = json::array();
 
     for (auto room : rooms_)
     {
@@ -158,6 +181,7 @@ json Hotel::viewRooms(bool isUserAdmin)
         roomInfo["maxCapacity"] = room.second.getMaxCapacity();
         roomInfo["freeCapacity"] = room.second.getFreeCapacity();
         roomInfo["users"] = json::array();
+        roomInfo["isAdmin"] = isUserAdmin;
         if (isUserAdmin && room.second.getIsFull() == false)
         {
             for (auto &reserve : reservations_[room.first])
@@ -171,7 +195,7 @@ json Hotel::viewRooms(bool isUserAdmin)
                 roomInfo["users"].push_back(usersInfo);
             }
         }
-        roomsInfo.push_back(roomInfo);
+        roomsInfo["rooms"].push_back(roomInfo);
     }
     return roomsInfo;
 }
@@ -300,6 +324,11 @@ json Hotel::modifyRoom(json command)
     }
     respond["errorMessage"] = ROOM_NOT_FOUND;
     return respond;
+}
+
+void Hotel::setUserFd(User* user, int userFd)
+{
+    user->setFd(userFd);
 }
 
 json Hotel::removeRoom(json command)

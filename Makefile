@@ -1,4 +1,4 @@
-CC=g++ --std=c++20
+CC=g++ -g --std=c++20
 
 OUT_SERVER = server
 OUT_CLIENT = client

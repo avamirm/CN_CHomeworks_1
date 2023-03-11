@@ -1,0 +1,38 @@
+{
+  "users": 
+  [
+    {
+      "id":0,
+      "username":"Admin",
+      "password":"admin",
+      "isAdmin": true
+    },
+    {
+      "id":1,
+      "username":"Morad",
+      "password":"1234",
+      "isAdmin": false,
+      "money": 1000,
+      "phoneNumber":"00945692356",
+      "address":"Canada, Montral"
+    },
+    {
+      "id":2,
+      "username":"Jasem",
+      "password":"4321",
+      "isAdmin": false,
+      "money": 200,
+      "phoneNumber":"00125692356",
+      "address":"United States, Newyork"
+    },
+    {
+      "id":3,
+      "username":"Pedram",
+      "password":"6789",
+      "isAdmin": false,
+      "money": 10,
+      "phoneNumber":"00989112659874",
+      "address":"Iran, Rasht"
+    }
+  ]
+}

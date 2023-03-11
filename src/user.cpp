@@ -51,12 +51,8 @@ json User::viewInfo(bool isSelfInfo)
     info["username"] = username_;
     info["id"] = id_;
     info["isAdmin"] = isAdmin_;
-    info["password"] = "";
     if (isSelfInfo)
         info["password"] = password_;
-    info["phoneNumber"] = "";
-    info["address"] = "";
-    info["money"] = "";
     if (!isAdmin_)
     {
         info["phoneNumber"] = phoneNumber_;
@@ -87,4 +83,9 @@ json User::editInformation(json command)
     response["isError"] = false;
     response["errorMessage"] = INFORMATION_CHANGED;
     return response;
+}
+
+void User::setFd(int fd)
+{
+    fd_ = fd;
 }

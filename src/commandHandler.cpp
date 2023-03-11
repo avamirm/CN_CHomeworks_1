@@ -40,31 +40,18 @@ json CommandHandler::isUserExist(std::string errMessage)
 json CommandHandler::runCommand(json command, int userFd)
 {
     json respond;
-    std::string cmd = command["cmd"];
+    std::string cmd = command["cmd"].get<std::string>();
     User *user = hotel_.findUser(userFd);
-    User *userByName = hotel_.findUser(command["username"], command["password"]);
 
-    if (userByName == nullptr)
-    {
-        if (cmd == SIGN_IN)
-            return isUserExist(INVALID_USERNAME_OR_PASSWORD);
-        else if (cmd == SIGN_UP)
-            return isUserExist(USER_SIGNED_UP);
-    }
-
-    bool isUserAdmin = user->isAdmin();
+    bool isUserAdmin = false;
+    if (user != nullptr)
+        isUserAdmin = user->isAdmin();      /////////////////////////////////////////
 
     if (cmd == SIGN_IN)
-    {
-        respond["isError"] = false;
-        respond["errorMessage"] = USER_LOGGED_IN;
-    }
+        respond = hotel_.findUserByName(command["username"].get<std::string>(), command["password"].get<std::string>(), userFd);
 
     else if (cmd == SIGN_UP)
-    {
-        respond["isError"] = true;
-        respond['errorMessage'] = USER_EXISTED;
-    }
+        respond = hotel_.checkUsernameExistance(command["username"].get<std::string>());
 
     else if (cmd == SUCCESS_SIGN_UP)
         respond = hotel_.addUser(command);

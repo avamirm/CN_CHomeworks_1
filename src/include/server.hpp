@@ -39,6 +39,7 @@ public:
     json readUsersConfig();
     std::vector<std::string> tokenizeCommand(std::string command);
     int setupServer();
+    void setDate();
 
 private:
     CommandHandler commandHandler_;

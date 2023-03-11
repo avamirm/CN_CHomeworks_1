@@ -59,10 +59,10 @@ public:
     bool checkDigits(std::string digits);
     std::vector<std::string> tokenizeCommand(std::string command);
     void signInCommand(std::vector<std::string> &tokens);
-    bool signUpCommand(std::vector<std::string> &tokens);
+    bool signUpCommand(std::string &username);
     bool isTokenSizeCorrect(int tokenSize, int correctNum);
     void viewUserInfoCommand();
-    void viewAllUsers();
+    bool viewAllUsers();
     void viewRoomsInfo();
     bool booking();
     bool canceling();

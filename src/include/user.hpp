@@ -20,6 +20,7 @@ public:
     json viewInfo(bool isSelfInfo);
     json editInformation(json command);
     bool isAdmin();
+    void setFd(int fd);
 
 private:
     std::string username_;
