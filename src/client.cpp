@@ -219,6 +219,7 @@ void Client::viewRoomsInfo()
 
 bool Client::booking()
 {
+
     std::string command;
     std::getline(std::cin, command);
     std::vector<std::string> tokens = tokenizeCommand(command);

@@ -3,36 +3,37 @@
 
 #include "hotel.hpp"
 
-#define VIEW_USER_INFORMATION "1"
-#define VIEW_ALL_USERS "2"
-#define VIEW_ROOMS_INFORMATION "3"
-#define BOOKING "4"
-#define CANCELING "5"
-#define PASS_DAY "6"
-#define EDIT_INFORMATION "7"
-#define LEAVING_ROOM "8"
-#define ROOMS "9"
-#define LOGOUT "0"
-#define Booking "Booking"
-// enum class Command
-// {
-//     VIEW_USER_INFORMATION,
-//     VIEW_ALL_USERS,
-//     VIEW_ROOMS_INFORMATION,
-//     BOOKING,
-//     CANCELING,
-//     PASS_DAY,
-//     EDIT_INFORMATION,
-//     LEAVING_ROOM,
-//     ROOMS,
-//     LOGOUT,
-// };
+#define VIEW_USER_INFORMATION "View user information"
+#define VIEW_ALL_USERS "View all users"
+#define VIEW_ROOMS_INFORMATION "View rooms information"
+#define BOOKING "Booking"
+#define CANCELING "Canceling"
+#define PASS_DAY "pass day"
+#define EDIT_INFORMATION "Edit information"
+#define LEAVING_ROOM "Leaving room"
+#define ROOMS "Rooms"
+#define LOGOUT "Logout"
+
+#define ADD "add"
+#define MODIFY "modify"
+#define REMOVE "remove"
+#define CAPACITY "capacity"
+
+#define SIGN_IN "signin"
+#define SIGN_UP "signup"
+#define SUCCESS_SIGN_UP "SuccessSignup"
+
+#define USER_SUCCESSFULLY_SIGN_UP "Error 231: User successfully signed up."
+#define USER_SIGNED_UP "Error 311: User Signed up. Enter your password, purse, phone and address."
+#define INVALID_USERNAME_OR_PASSWORD "Error 430: Invalid username or password."
+#define USER_EXISTED "Error 451: User already existed!"
+
 class CommandHandler
 {
 public:
     CommandHandler();
-    void setRooms(json& rooms);
-    void setUsers(json& users);
+    void setRooms(json &rooms);
+    void setUsers(json &users);
 
     json runCommand(json command, int userFd);
     void setDate(date::year_month_day date);

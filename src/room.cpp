@@ -11,7 +11,6 @@ Room::Room(int roomNo, int maxCapacity, int freeCapacity, int price, bool isFull
 
 Room::~Room()
 {
-
 }
 
 int Room::getRoomNo()
@@ -39,4 +38,12 @@ bool Room::getIsFull()
     return isFull_;
 }
 
+void Room::setFreeCapacity(int freeCapacity)
+{
+    freeCapacity_ = freeCapacity;
+}
 
+void Room::setPrice(int price)
+{
+    price_ = price;
+}

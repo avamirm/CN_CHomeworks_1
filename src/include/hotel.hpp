@@ -7,13 +7,19 @@
 #include <vector>
 #include <unordered_map>
 
-#define ACCESS_DENIED "Error 403: Access Denied"
-#define ROOM_NOT_FOUND "Error 101: The desired room was not found"
-#define LOW_BALANCE "Error 108: Your account balance is not enough"
-#define ROOM_IS_FULL "Error 109: The room capacity is full"
-#define RESERVE_NOT_FOUND "Error 102: Your reservation was not found"
+#define ROOM_NOT_FOUND "Error 101: The desired room was not found."
+#define RESERVE_NOT_FOUND "Error 102: Your reservation was not found."
+#define SUCCESSFULLY_ADDED "Error 104: Successfully added."
+#define SUCCESSFULLY_MODIFIED "Error 105: Successfully modified."
+#define SUCCESSFULLY_DELETED "Error 106: Successfully deleted."
+#define LOW_BALANCE "Error 108: Your account balance is not enough."
+#define ROOM_IS_FULL "Error 109: The room capacity is full."
+#define ROOM_EXIST "Error 111: This room already exists."
+#define ACCESS_DENIED "Error 403: Access Denied."
+#define INVALID_CAPACITY "Error 412: Invalid capacity value!"
+#define SUCCESSFULLY_LEAVING "Error 413: Successfully leaving."
 
-class Hotel 
+class Hotel
 {
 public:
     Hotel();
@@ -21,12 +27,20 @@ public:
     void addRoom(int roomNo, int maxCapacity, int freeCapacity, int price, bool isFull);
     void addReservation(int roomNo, int userId, std::string &reserveDate, std::string &checkOutDate, int numOfBeds);
     // bool isDateValid(std::string& date);
-    User* findUser(int userFd);
-    json viewAllUsers(User* user);
+    User *findUser(int userFd);
+    User *findUser(std::string username, std::string password);
+    json viewAllUsers(User *user);
     json viewRooms(bool isUserAdmin);
-    void addRooms(json& rooms);
-    void addUsers(json& users);
+    json editRooms(bool isUserAdmin);
+    json addNewRoom(json command);
+    json modifyRoom(json command);
+    json removeRoom(json command);
+    json leavingRoom(User *user, int value);
+    json changeCapcity(int value, int capacity, bool isUserAdmin);
+    void addRooms(json &rooms);
+    void addUsers(json &users);
     void setDate(date::year_month_day date);
+
 private:
     std::unordered_map<int, User> users_;
     std::unordered_map<int, std::vector<Reservation>> reservations_;

@@ -1,5 +1,5 @@
 #include "include/server.hpp"
-#include <fstream> 
+#include <fstream>
 
 using namespace std;
 
@@ -106,7 +106,7 @@ bool Server::checkDate(std::string date)
 void Server::start()
 {
 
-    int server_fd, max_sd , new_socket;
+    int server_fd, max_sd, new_socket;
     char buffer[1024] = {0};
     fd_set master_set, working_set;
 
@@ -127,7 +127,8 @@ void Server::start()
         if (tokens.size() != 2 || tokens[0] != SET_TIME)
         {
             std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
-            break;
+            continue;
+            ;
         }
         else
         {
@@ -136,7 +137,8 @@ void Server::start()
             if (!checkDate(date))
             {
                 std::cout << INVALID_VALUE << std::endl;
-                break;
+                continue;
+                ;
             }
             setServerDate(date);
             isDateCorrect = true;

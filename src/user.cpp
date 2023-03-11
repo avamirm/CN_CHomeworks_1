@@ -16,7 +16,7 @@ User::~User()
 {
 }
 
-void User::setInfo(std::string& password, int id, std::string& phoneNumber, std::string& address, int money)
+void User::setInfo(std::string &password, int id, std::string &phoneNumber, std::string &address, int money)
 {
     password_ = password;
     id_ = id;
@@ -64,4 +64,22 @@ json User::viewInfo(bool isSelfInfo)
 bool User::isAdmin()
 {
     return isAdmin_;
+}
+
+json User::changeInfo(json command)
+{
+    json response;
+    if (isAdmin_)
+    {
+        password_ = command["newPassWord"];
+    }
+    else
+    {
+        password_ = command["newPassWord"];
+        phoneNumber_ = command["phone"];
+        address_ = command["address"];
+    }
+    response["isError"] = true;
+    response["errorMessage"] = INFORMATION_CHANGED;
+    return response;
 }
