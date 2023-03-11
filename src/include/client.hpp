@@ -57,6 +57,32 @@ public:
     bool checkDate(std::string date);
     bool checkDigits(std::string digits);
     std::vector<std::string> tokenizeCommand(std::string command);
+    void signInCommand(std::vector<std::string> &tokens);
+    bool signUpCommand(std::vector<std::string> &tokens);
+    bool isTokenSizeCorrect(int tokenSize, int correctNum);
+    void viewUserInfoCommand();
+    void viewAllUsers();
+    void viewRoomsInfo();
+    bool booking();
+    bool canceling();
+    bool passDay();
+    bool editInfo();
+    bool leaveRoom();
+    bool changeCapacity(std::string newCap);
+    void roomCommand();
+    bool addRoom(std::vector<std::string> &tokens);
+    bool modifyRoom(std::vector<std::string> &tokens);
+    bool removeRoom(std::string &roomNo);
+    void logout();
+    void readConfig();
+private:
+    bool hasLoggedIn_;
+    bool isRoomCmd_;
+    bool isLeavingRoomCmd_;
+    int commandFd_;
+    char readBuffer[1024];
+    int port_;
+    std::string hostname_;
 };
 
 #endif
