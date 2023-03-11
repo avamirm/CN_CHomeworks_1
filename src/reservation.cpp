@@ -27,10 +27,11 @@ std::string Reservation::getReserveDate()
 {
     return reserveDate_;
 }
-// int Reservation::getRoomNo()
-// {
-//     return roomNo_;
-// }
+
+int Reservation::getRoomNo()
+{
+    return roomNo_;
+}
 
 int Reservation::getUserId()
 {

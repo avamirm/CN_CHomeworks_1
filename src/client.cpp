@@ -71,7 +71,7 @@ std::vector<std::string> Client::tokenizeCommand(std::string command)
 
 void Client::run()
 {
-   // Configuration config(configFilePath);
+    // Configuration config(configFilePath);
     std::string command;
     int commandFd;
     std::ifstream fin(CONFIG_FILE);
