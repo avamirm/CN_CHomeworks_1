@@ -40,6 +40,11 @@ int User::getFd()
     return fd_;
 }
 
+int User::getId()
+{
+    return id_;
+}
+
 json User::viewInfo(bool isSelfInfo)
 {
     json info;
@@ -66,7 +71,7 @@ bool User::isAdmin()
     return isAdmin_;
 }
 
-json User::changeInfo(json command)
+json User::editInformation(json command)
 {
     json response;
     if (isAdmin_)
@@ -79,7 +84,7 @@ json User::changeInfo(json command)
         phoneNumber_ = command["phone"];
         address_ = command["address"];
     }
-    response["isError"] = true;
+    response["isError"] = false;
     response["errorMessage"] = INFORMATION_CHANGED;
     return response;
 }

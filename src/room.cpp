@@ -47,3 +47,8 @@ void Room::setPrice(int price)
 {
     price_ = price;
 }
+
+void Room::setMaxCapacity(int maxCapacity)
+{
+    maxCapacity_ = maxCapacity;
+}
