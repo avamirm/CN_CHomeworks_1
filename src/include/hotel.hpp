@@ -4,20 +4,22 @@
 #include "reservation.hpp"
 #include "room.hpp"
 #include "user.hpp"
+#include "errors.hpp"
 #include <vector>
 #include <unordered_map>
 
-#define ROOM_NOT_FOUND "Error 101: The desired room was not found."
-#define RESERVE_NOT_FOUND "Error 102: Your reservation was not found."
-#define SUCCESSFULLY_ADDED "Error 104: Successfully added."
-#define SUCCESSFULLY_MODIFIED "Error 105: Successfully modified."
-#define SUCCESSFULLY_DELETED "Error 106: Successfully deleted."
-#define LOW_BALANCE "Error 108: Your account balance is not enough."
-#define ROOM_IS_FULL "Error 109: The room capacity is full."
-#define ROOM_EXIST "Error 111: This room already exists."
-#define ACCESS_DENIED "Error 403: Access Denied."
-#define INVALID_CAPACITY "Error 412: Invalid capacity value!"
-#define SUCCESSFULLY_LEAVING "Error 413: Successfully leaving."
+// #define ROOM_NOT_FOUND "Error 101: The desired room was not found."
+// #define RESERVE_NOT_FOUND "Error 102: Your reservation was not found."
+// #define SUCCESSFULLY_ADDED "Error 104: Successfully added."
+// #define SUCCESSFULLY_MODIFIED "Error 105: Successfully modified."
+// #define SUCCESSFULLY_DELETED "Error 106: Successfully deleted."
+// #define LOW_BALANCE "Error 108: Your account balance is not enough."
+// #define ROOM_IS_FULL "Error 109: The room capacity is full."
+// #define ROOM_EXIST "Error 111: This room already exists."
+// #define USER_SUCCESSFULLY_SIGN_UP "Error 231: User successfully signed up."
+// #define ACCESS_DENIED "Error 403: Access Denied."
+// #define INVALID_CAPACITY "Error 412: Invalid capacity value!"
+// #define SUCCESSFULLY_LEAVING "Error 413: Successfully leaving."
 
 class Hotel
 {
@@ -29,6 +31,7 @@ public:
     // bool isDateValid(std::string& date);
     User *findUser(int userFd);
     User *findUser(std::string username, std::string password);
+    json addUser(json command);
     json viewAllUsers(User *user);
     json viewRooms(bool isUserAdmin);
     json editRooms(bool isUserAdmin);
@@ -36,7 +39,7 @@ public:
     json modifyRoom(json command);
     json removeRoom(json command);
     json leavingRoom(User *user, int value);
-    json changeCapcity(int value, int capacity, bool isUserAdmin);
+    json changeCapacity(int value, int capacity, bool isUserAdmin);
     void addRooms(json &rooms);
     void addUsers(json &users);
     void setDate(date::year_month_day date);

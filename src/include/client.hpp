@@ -2,6 +2,7 @@
 #define CLIENT_HPP
 
 #include "json.hpp"
+#include "errors.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -43,10 +44,10 @@ using json = nlohmann::json;
 #define REMOVE "remove"
 #define CAPACITY "capacity"
 
-#define USER_LOGGED_IN "230: User logged in."
-#define USER_SIGNED_UP "311: User Signed up. Enter your password, purse, phone and address."
-#define INVALID_USERNAME_OR_PASSWORD "430: Invalid username or password."
-#define BAD_SEQUENCE_OF_COMMANDS "503: Bad sequence of commands."
+// #define USER_LOGGED_IN "230: User logged in."
+// #define USER_SIGNED_UP "311: User Signed up. Enter your password, purse, phone and address."
+// #define INVALID_USERNAME_OR_PASSWORD "430: Invalid username or password."
+// #define BAD_SEQUENCE_OF_COMMANDS "503: Bad sequence of commands."
 
 class Client
 {
@@ -75,6 +76,7 @@ public:
     bool removeRoom(std::string &roomNo);
     void logout();
     void readConfig();
+
 private:
     bool hasLoggedIn_;
     bool isRoomCmd_;

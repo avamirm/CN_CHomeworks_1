@@ -2,6 +2,7 @@
 #define SERVER_HPP
 
 #include "commandHandler.hpp"
+#include "errors.hpp"
 
 #include <vector>
 #include <string.h>
@@ -23,9 +24,6 @@
 #define SET_TIME "setTime"
 #define SIGN_IN "signin"
 #define SIGN_UP "signup"
-
-#define INVALID_VALUE "401: Invalid value!"
-#define BAD_SEQUENCE_OF_COMMANDS "503: Bad sequence of commands."
 
 class Server
 {

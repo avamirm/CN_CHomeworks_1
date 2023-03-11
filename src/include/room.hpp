@@ -15,6 +15,9 @@ public:
     // int getMaxUser();
     bool getIsFull();
     int getPrice();
+    void setPrice(int price);
+    void setFreeCapacity(int freeCapacity);
+    void setMaxCapacity(int maxCapacity);
 
 private:
     int roomNo_;

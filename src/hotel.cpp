@@ -61,6 +61,27 @@ void Hotel::addUsers(json &users)
     }
 }
 
+json Hotel::addUser(json user)
+{
+    json respond;
+    respond["isError"] = false;
+    std::string phoneNumber_;
+    std::string address_;
+    int money_;
+    lastAssignedId_ += 1;
+    int id = lastAssignedId_;
+    std::string username = user["username"];
+    std::string password = user["password"];
+    // lastAssignedId_ = std::max(lastAssignedId_, id);
+    std::string phoneNumber = user["phoneNumber"];
+    std::string address = user["address"];
+    int money = user["money"];
+    User newUser = User(id, username, password, false, phoneNumber, address, money);
+    users_.insert({id, newUser});
+    respond['errorMessage'] = USER_SUCCESSFULLY_SIGN_UP;
+    return respond;
+}
+
 void Hotel::addRoom(int roomNo, int maxCapacity, int freeCapacity, int price, bool isFull)
 {
     Room room = Room(roomNo, maxCapacity, freeCapacity, price, isFull);
@@ -96,7 +117,7 @@ User *Hotel::findUser(int userFd)
 
 User *Hotel::findUser(std::string username, std::string password)
 {
-    for (auto user : users_)
+    for (auto &user : users_)
     {
         if (user.second.getName() == username && user.second.getPassword() == password)
             return &user.second;
@@ -171,17 +192,23 @@ json Hotel::leavingRoom(User *user, int value)
         {
             if (roomUser.getUserId() == user->getId())
             {
-                if (roomUSer.getRoomNo() == value)
+                if (roomUser.getRoomNo() == value)
+                {
+                    respond["isError"] = false;
                     respond["errorMessage"] = SUCCESSFULLY_LEAVING;
+                }
                 else
                     respond["errorMessage"] = RESERVE_NOT_FOUND;
+                return respond;
             }
         }
     }
+    respond["errorMessage"] = RESERVE_NOT_FOUND;
+    return respond;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-json Hotel::changeCapcity(int value, int capacity, bool isUserAdmin)
+json Hotel::changeCapacity(int value, int capacity, bool isUserAdmin)
 {
     json response;
     response["isError"] = true;
@@ -201,6 +228,7 @@ json Hotel::changeCapcity(int value, int capacity, bool isUserAdmin)
             }
             else
             {
+                response["isError"] = false;
                 room.second.setMaxCapacity(capacity);
                 response["errorMessage"] = SUCCESSFULLY_LEAVING;
                 return response;
@@ -230,18 +258,19 @@ json Hotel::addNewRoom(json command)
 {
     json respond;
     respond["isError"] = true;
-    int roomNo = stoi(command["roomNum"]);
-    int maxCapacity = stoi(command["maxCap"]);
-    int price = stoi(command["price"]);
+    std::string roomNo = command["roomNum"];
+    std::string maxCapacity = command["maxCap"];
+    std::string price = command["price"];
     for (auto room : rooms_)
     {
-        if (room.second.getRoomNo() == roomNo)
+        if (room.second.getRoomNo() == std::stoi(roomNo))
         {
             respond["errorMessage"] = ROOM_EXIST;
-            return respond
+            return respond;
         }
     }
-    addRoom(stoi(roomNo), stoi(maxCapacity), stoi(maxCapacity), stoi(price), false);
+    addRoom(std::stoi(roomNo), std::stoi(maxCapacity), std::stoi(maxCapacity), std::stoi(price), false);
+    respond["isError"] = false;
     respond["errorMessage"] = SUCCESSFULLY_ADDED;
     return respond;
 }
@@ -250,45 +279,49 @@ json Hotel::modifyRoom(json command)
 {
     json respond;
     respond["isError"] = true;
-    int roomNo = stoi(command["roomNum"]);
-    int maxCapacity = stoi(command["newMaxCap"]);
-    int price = stoi(command["newPrice"]);
+    std::string roomNo = command["roomNum"];
+    std::string maxCapacity = command["newMaxCap"];
+    std::string price = command["newPrice"];
     for (auto room : rooms_)
     {
-        if (room.second.getRoomNo() == roomNo)
+        if (room.second.getRoomNo() == std::stoi(roomNo))
         {
-            if (room.second.getIsFull() == true && room.second.getMaxCapacity() < stoi(maxCapacity))
+            if (room.second.getIsFull() == true && room.second.getMaxCapacity() < std::stoi(maxCapacity))
             {
                 respond["errorMessage"] = ROOM_IS_FULL;
                 return respond;
             }
-            room.second.setMaxCapacity(stoi(maxCapacity));
-            room.second.setPrice(stoi(price));
+            room.second.setMaxCapacity(std::stoi(maxCapacity));
+            room.second.setPrice(std::stoi(price));
+            respond["isError"] = false;
             respond["errorMessage"] = SUCCESSFULLY_MODIFIED;
             return respond;
         }
     }
     respond["errorMessage"] = ROOM_NOT_FOUND;
+    return respond;
 }
 
 json Hotel::removeRoom(json command)
 {
     json respond;
     respond["isError"] = true;
-    int roomNo = stoi(command["roomNum"]);
+    std::string roomNo = command["roomNum"];
     for (auto room : rooms_)
     {
-        if (room.second.getRoomNo() == roomNo)
+        if (room.second.getRoomNo() == std::stoi(roomNo))
         {
             if (room.second.getIsFull() == true)
             {
                 respond["errorMessage"] = ROOM_IS_FULL;
                 return respond;
             }
-            rooms_.erase(roomNo);
-            respond["errorMessage"] = SUCCESSFULLY_REMOVED;
+            rooms_.erase(std::stoi(roomNo));
+            respond["isError"] = false;
+            respond["errorMessage"] = SUCCESSFULLY_DELETED;
             return respond;
         }
     }
     respond["errorMessage"] = ROOM_NOT_FOUND;
+    return respond;
 }

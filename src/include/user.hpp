@@ -3,10 +3,7 @@
 
 #include <string>
 #include "json.hpp"
-
-#define USER_LOGGED_IN "Error 230: User logged in"
-#define INFORMATION_CHANGED "Error 312: Information was changed successfully."
-#define INVALID_USERNAME_OR_PASSWORD "Error 430: Invalid username or password"
+#include "errors.hpp"
 
 using json = nlohmann::json;
 
@@ -18,6 +15,7 @@ public:
     std::string getName();
     std::string getPassword();
     int getFd();
+    int getId();
     void setInfo(std::string &password, int id, std::string &phoneNumber, std::string &address, int money);
     json viewInfo(bool isSelfInfo);
     json editInformation(json command);

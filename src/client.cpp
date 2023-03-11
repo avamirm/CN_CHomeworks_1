@@ -106,7 +106,7 @@ bool Client::signUpCommand(std::vector<std::string> &tokens)
 
     if (recvMessage["isError"])
         std::cout << recvMessage["errorMessage"] << std::endl;
-    else 
+    else
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
         std::cout << USER_SIGNED_UP;
@@ -151,15 +151,15 @@ void Client::viewUserInfoCommand()
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
     std::cout << "\u2022 User Info:" << std::endl
-                << "  ID:        " << recvMessage["id"] << std::endl
-                << "  Username:  " << recvMessage["username"] << std::endl
-                << "  Password:  " << recvMessage["password"] << std::endl
-                << "  Admin:     " << recvMessage["isAdmin"] << std::endl;
+              << "  ID:        " << recvMessage["id"] << std::endl
+              << "  Username:  " << recvMessage["username"] << std::endl
+              << "  Password:  " << recvMessage["password"] << std::endl
+              << "  Admin:     " << recvMessage["isAdmin"] << std::endl;
     if (recvMessage["isAdmin"])
     {
         std::cout << "  Phone:     " << recvMessage["phoneNumber"] << std::endl
-                    << "  Money:     " << recvMessage["money"] << std::endl
-                    << "  Address:   " << recvMessage["address"] << std::endl;
+                  << "  Money:     " << recvMessage["money"] << std::endl
+                  << "  Address:   " << recvMessage["address"] << std::endl;
     }
 }
 
@@ -177,14 +177,14 @@ void Client::viewAllUsers()
         std::cout << recvMessage["errorMessage"] << std::endl;
     }
     std::cout << "\u2022 User Info:" << std::endl
-                << "  ID:        " << recvMessage["id"] << std::endl
-                << "  Username:  " << recvMessage["username"] << std::endl
-                << "  Admin:     " << recvMessage["isAdmin"] << std::endl;
+              << "  ID:        " << recvMessage["id"] << std::endl
+              << "  Username:  " << recvMessage["username"] << std::endl
+              << "  Admin:     " << recvMessage["isAdmin"] << std::endl;
     if (recvMessage["isAdmin"])
     {
         std::cout << "  Phone:     " << recvMessage["phoneNumber"] << std::endl
-                    << "  Money:     " << recvMessage["money"] << std::endl
-                    << "  Address:   " << recvMessage["address"] << std::endl;
+                  << "  Money:     " << recvMessage["money"] << std::endl
+                  << "  Address:   " << recvMessage["address"] << std::endl;
     }
 }
 
@@ -203,17 +203,17 @@ void Client::viewRoomsInfo()
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
     std::cout << "\u2022 Rooms Info: " << std::endl
-                << "  Number:         " << recvMessage["roomNo"] << std::endl
-                << "  Price:          " << recvMessage["price"] << std::endl
-                << "  Max Capacity:   " << recvMessage["maxCapacity"] << std::endl
-                << "  Free Capacity:  " << recvMessage["freeCapacity"] << std::endl;
+              << "  Number:         " << recvMessage["roomNo"] << std::endl
+              << "  Price:          " << recvMessage["price"] << std::endl
+              << "  Max Capacity:   " << recvMessage["maxCapacity"] << std::endl
+              << "  Free Capacity:  " << recvMessage["freeCapacity"] << std::endl;
     for (auto &user : recvMessage["users"])
     {
         std::cout << "\u2022 Users: " << std::endl
-                    << "  User ID:         " << user["userId"] << std::endl
-                    << "  Number of Beds:  " << user["numOfBeds"] << std::endl
-                    << "  Reserve Date:    " << user["reserveDate"] << std::endl
-                    << "  CheckOut Date:   " << user["checkOutDate"] << std::endl;
+                  << "  User ID:         " << user["userId"] << std::endl
+                  << "  Number of Beds:  " << user["numOfBeds"] << std::endl
+                  << "  Reserve Date:    " << user["reserveDate"] << std::endl
+                  << "  CheckOut Date:   " << user["checkOutDate"] << std::endl;
     }
 }
 
@@ -317,7 +317,7 @@ bool Client::passDay()
 bool Client::editInfo()
 {
     nlohmann::json message;
-     std::string newPassword, phone, address;
+    std::string newPassword, phone, address;
     std::cin >> newPassword;
     std::cin >> phone;
     std::cin >> address;
@@ -335,6 +335,7 @@ bool Client::editInfo()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    std::cout << recvMessage["errorMessage"] << std::endl;
     return true;
 }
 
@@ -500,65 +501,65 @@ void Client::run()
         memset(readBuffer, 0, 1024);
         if (cmd == SIGN_IN && !hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 3))
             signInCommand(tokens);
-        
+
         else if (cmd == SIGN_UP && !hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 2))
             if (!signUpCommand(tokens))
                 continue;
 
-        else if (cmd == VIEW_USER_INFORMATION && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
-            viewUserInfoCommand();
+            else if (cmd == VIEW_USER_INFORMATION && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
+                viewUserInfoCommand();
 
-        else if (cmd == VIEW_ALL_USERS && isTokenSizeCorrect(tokens.size(), 1) && hasLoggedIn_)
-            viewAllUsers();
-        
-        else if (cmd == VIEW_ROOMS_INFORMATION && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
-            viewRoomsInfo();
+            else if (cmd == VIEW_ALL_USERS && isTokenSizeCorrect(tokens.size(), 1) && hasLoggedIn_)
+                viewAllUsers();
 
-        else if (cmd == BOOKING && hasLoggedIn_)
-            if (!booking())
-                continue;    
+            else if (cmd == VIEW_ROOMS_INFORMATION && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
+                viewRoomsInfo();
 
-        else if (cmd == CANCELING && hasLoggedIn_)
-            if (!canceling())
-                continue;
+            else if (cmd == BOOKING && hasLoggedIn_)
+                if (!booking())
+                    continue;
 
-        else if (cmd == PASS_DAY && hasLoggedIn_)
-            if (!passDay())
-                continue;
+                else if (cmd == CANCELING && hasLoggedIn_)
+                    if (!canceling())
+                        continue;
 
-        else if (cmd == EDIT_INFORMATION && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
-            if (!editInfo())
-                continue;
+                    else if (cmd == PASS_DAY && hasLoggedIn_)
+                        if (!passDay())
+                            continue;
 
-        else if (cmd == LEAVING_ROOM && hasLoggedIn_)
-            if (!leaveRoom())
-                continue;
+                        else if (cmd == EDIT_INFORMATION && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
+                            if (!editInfo())
+                                continue;
 
-        ////////////////////////////////////////////////////////
-        else if (cmd == CAPACITY && isTokenSizeCorrect(tokens.size(), 2) && isLeavingRoomCmd_)
-            if(!changeCapacity(tokens[1]))
-                continue;
-        //////////////////////////////////////////////////////////
+                            else if (cmd == LEAVING_ROOM && hasLoggedIn_)
+                                if (!leaveRoom())
+                                    continue;
 
-        else if (cmd == ROOMS && isTokenSizeCorrect(tokens.size(), 1) && hasLoggedIn_)
-            roomCommand();
-        
-        ///////////////////////////////////////////////////////
-        else if (cmd == ADD && isTokenSizeCorrect(tokens.size(), 4) && isRoomCmd_ && hasLoggedIn_)
-            if (!addRoom(tokens))
-                continue;
+                                ////////////////////////////////////////////////////////
+                                else if (cmd == CAPACITY && isTokenSizeCorrect(tokens.size(), 2) && isLeavingRoomCmd_)
+                                    if (!changeCapacity(tokens[1]))
+                                        continue;
+                                    //////////////////////////////////////////////////////////
 
-        else if (cmd == MODIFY && isTokenSizeCorrect(tokens.size(), 4) && isRoomCmd_ && hasLoggedIn_)
-            if (!modifyRoom(tokens))
-                continue;
+                                    else if (cmd == ROOMS && isTokenSizeCorrect(tokens.size(), 1) && hasLoggedIn_)
+                                        roomCommand();
 
-        else if (cmd == REMOVE && isTokenSizeCorrect(tokens.size(), 2) && isRoomCmd_ && hasLoggedIn_)
-            if (!removeRoom(tokens[1]))
-                continue;
-                
-        //////////////////////////////////////////////////////////////
-        else if (cmd == LOGOUT && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
-            logout();
+                                    ///////////////////////////////////////////////////////
+                                    else if (cmd == ADD && isTokenSizeCorrect(tokens.size(), 4) && isRoomCmd_ && hasLoggedIn_)
+                                        if (!addRoom(tokens))
+                                            continue;
+
+                                        else if (cmd == MODIFY && isTokenSizeCorrect(tokens.size(), 4) && isRoomCmd_ && hasLoggedIn_)
+                                            if (!modifyRoom(tokens))
+                                                continue;
+
+                                            else if (cmd == REMOVE && isTokenSizeCorrect(tokens.size(), 2) && isRoomCmd_ && hasLoggedIn_)
+                                                if (!removeRoom(tokens[1]))
+                                                    continue;
+
+                                                //////////////////////////////////////////////////////////////
+                                                else if (cmd == LOGOUT && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
+                                                    logout();
     }
 }
 
@@ -567,4 +568,3 @@ int main()
     Client client;
     client.run();
 }
-

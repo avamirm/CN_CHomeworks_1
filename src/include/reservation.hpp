@@ -8,7 +8,7 @@ class Reservation
 public:
     Reservation(int roomNo, int userId, std::string &reserveDate, std::string &checkOutDate, int numOfBeds);
     ~Reservation();
-    // int getRoomNo();
+    int getRoomNo();
     int getUserId();
     std::string getReserveDate();
     std::string getCheckOutDate();
