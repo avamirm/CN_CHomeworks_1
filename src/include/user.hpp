@@ -21,7 +21,9 @@ public:
     json editInformation(json command);
     bool isAdmin();
     void setFd(int fd);
-
+    void logout();
+    int getMoney();
+    void pay(int payment);
 private:
     std::string username_;
     std::string password_;

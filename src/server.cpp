@@ -92,19 +92,14 @@ void Server::setServerDate(std::string date)
 
 bool Server::checkDate(std::string date)
 {
-    // istringstream ss(date);
-    // date::year_month_day tempServerDate;
-    // std::cin >> date::parse("%F", tempServerDate);
-    // if (!std::cin)
-    // {
-    //     std::cin.clear();
-    //     return false;
-    // }
-    // return true;
     std::istringstream ss(date);
-    date::year_month_day tempServerDate;
-    ss >> date::parse("%F", tempServerDate);
-    if (!ss)
+    date::year_month_day resultDate;
+    ss >> date::parse("%F", resultDate); // %F: %Y-%M-%d
+    // return !ss.fail();
+    if (ss.fail())
+        return false;
+    std::string tempStr;
+    if (ss >> tempStr)
         return false;
     return true;
 }

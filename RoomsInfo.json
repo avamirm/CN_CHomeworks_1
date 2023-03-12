@@ -22,8 +22,8 @@
             {
                 "id":1,
                 "numOfBeds":1,
-                "reserveDate":"25-02-2023",
-                "checkOutDate":"27-02-2023"
+                "reserveDate":"2023-02-25",
+                "checkOutDate":"2023-02-27"
             }
         ]
       },
@@ -38,8 +38,8 @@
             {
                 "id":2,
                 "numOfBeds":2,
-                "reserveDate":"25-02-2023",
-                "checkOutDate":"27-02-2023"
+                "reserveDate":"2023-02-25",
+                "checkOutDate":"2023-02-27"
             }
         ]
       },
@@ -54,14 +54,14 @@
             {
                 "id":2,
                 "numOfBeds":1,
-                "reserveDate":"27-02-2023",
-                "checkOutDate":"28-02-2023"
+                "reserveDate":"2023-02-27",
+                "checkOutDate":"2023-02-28"
             },
             {
                 "id":3,
                 "numOfBeds":1,
-                "reserveDate":"25-02-2023",
-                "checkOutDate":"26-02-2023"
+                "reserveDate":"2023-02-25",
+                "checkOutDate":"2023-02-26"
             }
         ]
       }

@@ -50,5 +50,25 @@ void Room::setPrice(int price)
 
 void Room::setMaxCapacity(int maxCapacity)
 {
+    freeCapacity_ += (maxCapacity_ - maxCapacity );
     maxCapacity_ = maxCapacity;
+}
+
+void Room::makeEmpty()
+{
+    isFull_ = false;
+    freeCapacity_ = maxCapacity_;
+}
+
+void Room::increaseSpace(int numOfGonePeople)
+{
+    freeCapacity_ += numOfGonePeople;
+    isFull_ = false;
+}
+
+void Room::fill(int numOfBeds)
+{
+    freeCapacity_ -= numOfBeds;
+    if (freeCapacity_ == 0)
+        isFull_ = true;
 }

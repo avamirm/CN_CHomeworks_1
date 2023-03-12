@@ -61,8 +61,11 @@ json CommandHandler::runCommand(json command, int userFd)
     else if (cmd == VIEW_ALL_USERS)
         respond = hotel_.viewAllUsers(user);
     else if (cmd == VIEW_ROOMS_INFORMATION)
-        respond = hotel_.viewRooms(isUserAdmin);
-    // else if (cmd == BOOKING)
+        respond = hotel_.viewRooms(isUserAdmin, command["emptyRooms"].get<bool>());
+    else if (cmd == BOOKING)
+        respond = hotel_.booking(user, command);
+    else if (cmd == CANCELING)
+        respond = hotel_.canceling(user, command);
     else if (cmd == EDIT_INFORMATION)
         respond = user->editInformation(command);
     else if (cmd == LEAVING_ROOM)
@@ -71,14 +74,14 @@ json CommandHandler::runCommand(json command, int userFd)
         int value_ = std::stoi(value);
         respond = hotel_.leavingRoom(user, value_);
     }
-    else if (cmd == CAPACITY)
+    else if (cmd == FREE_ROOM)
     {
-        std::string value = command["value"];
-        std::string newCap = command["newCap"];
-        int value_ = std::stoi(value);
-        int newCap_ = std::stoi(newCap);
-        respond = hotel_.changeCapacity(value_, newCap_, isUserAdmin);
+        std::string roomNo = command["roomNo"];
+        int roomN = std::stoi(roomNo);
+        respond = hotel_.emptyRoom(roomN, isUserAdmin);
     }
+    else if (cmd == PASS_DAY)
+        respond = hotel_.passDay(command["daysNo"].get<int>(), isUserAdmin);
     else if (cmd == ROOMS)
         respond = hotel_.editRooms(isUserAdmin);
     else if (cmd == ADD)
@@ -87,5 +90,9 @@ json CommandHandler::runCommand(json command, int userFd)
         respond = hotel_.modifyRoom(command);
     else if (cmd == REMOVE)
         respond = hotel_.removeRoom(command);
+    else if (cmd == LOGOUT)
+        respond = hotel_.logoutUser(user);
+    else if (cmd == SHOW_USER_RESERVES)
+        respond = hotel_.showUserReserves(user);
     return respond;
 }

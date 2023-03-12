@@ -12,7 +12,6 @@ Client::Client()
 {
     hasLoggedIn_ = false;
     isRoomCmd_ = false;
-    isLeavingRoomCmd_ = false;
     readConfig();
 }
 
@@ -37,14 +36,14 @@ int Client::connectServer(const int port, const std::string host)
 
 bool Client::checkDate(std::string date)
 {
-    // istringstream ss(date);
-    date::year_month_day tempServerDate;
-    std::cin >> date::parse("%F", tempServerDate);
-    if (!std::cin)
-    {
-        std::cin.clear();
+    std::istringstream ss(date);
+    date::year_month_day resultDate;
+    ss >> date::parse("%F", resultDate); // %F: %Y-%M-%d
+    if (ss.fail())
         return false;
-    }
+    std::string tempStr;
+    if (ss >> tempStr)
+        return false;
     return true;
 }
 
@@ -75,7 +74,7 @@ std::vector<std::string> Client::tokenizeCommand(std::string command)
 void Client::signInCommand(std::vector<std::string> &tokens)
 {
     nlohmann::json message;
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
     std::string username = tokens[1];
     std::string password = tokens[2];
     message["cmd"] = "signin";
@@ -97,7 +96,7 @@ void Client::signInCommand(std::vector<std::string> &tokens)
 bool Client::signUpCommand(std::string &username)
 {
     nlohmann::json message;
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
     message["cmd"] = "signup";
     message["username"] = username;
     std::string messageStr = message.dump();
@@ -150,7 +149,7 @@ bool Client::signUpCommand(std::string &username)
 void Client::viewUserInfoCommand()
 {
     nlohmann::json message;
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
     message["cmd"] = "View user information";
     std::string messageStr = message.dump();
     if (send(commandFd_, messageStr.c_str(), messageStr.size(), 0) < 0)
@@ -174,7 +173,7 @@ void Client::viewUserInfoCommand()
 bool Client::viewAllUsers()
 {
     nlohmann::json message;
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
     message["cmd"] = "View all users";
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
@@ -208,11 +207,27 @@ bool Client::isTokenSizeCorrect(int tokenSize, int correctNum)
     return tokenSize == correctNum;
 }
 
-void Client::viewRoomsInfo()
+bool Client::viewRoomsInfo()
 {
     nlohmann::json message;
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
+    std::cout << "which rooms do you want to be shown? (choose the number)" << std::endl
+    << "  \u2022 1: Only empty rooms" << std::endl
+    << "  \u2022 2: All rooms" << std::endl;
+    std::string choice;
+    std::getline(std::cin, choice);
+    if (choice == "1")
+        message["emptyRooms"] = true;
+    else if (choice == "2")
+        message["emptyRooms"] = false;
+    else
+    {
+        std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        return false;
+    }
+        
     message["cmd"] = "View rooms information";
+    
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
@@ -224,7 +239,7 @@ void Client::viewRoomsInfo()
         << "  Price:          " << room["price"] << std::endl
         << "  Max Capacity:   " << room["maxCapacity"] << std::endl
         << "  Free Capacity:  " << room["freeCapacity"] << std::endl;
-        if (room["isAdmin"])
+        if (room["isAdmin"] && choice == "2")
             for (auto &user : room["users"])
             {
                   std::cout << "      \u2022 User: " << std::endl
@@ -233,8 +248,9 @@ void Client::viewRoomsInfo()
                             << "      Reserve Date:    " << user["reserveDate"] << std::endl
                             << "      CheckOut Date:   " << user["checkOutDate"] << std::endl;
             }
+        std::cout << std::endl;
     }
-
+    return true;
 }
 
 bool Client::booking()
@@ -249,7 +265,7 @@ bool Client::booking()
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
     std::string roomNo = tokens[1];
     std::string numOfBeds = tokens[2];
     std::string checkInDate = tokens[3];
@@ -275,44 +291,77 @@ bool Client::booking()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    if (recvMessage["isError"])
+    {
+        std::cout << recvMessage["errorMessage"] << std::endl;
+        return false;
+    }
     return true;
 }
 
 bool Client::canceling()
 {
-    std::string command;
-    std::getline(std::cin, command);
-    std::vector<std::string> tokens = tokenizeCommand(command);
-    nlohmann::json message;
-    if (!isTokenSizeCorrect(tokens.size(), 3))
-    {
-        std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
-        return false;
-    }
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
-    std::string roomNo = tokens[1];
-    std::string reserveNum = tokens[2];
-    if (!checkDigits(roomNo) || !checkDigits(reserveNum))
-    {
-        std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
-        return false;
-    }
-    message["cmd"] = "Canceling";
-    message["roomNum"] = roomNo;
-    message["Num"] = reserveNum;
-    std::string messageStr = message.dump();
-    send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
+    nlohmann::json sendMsg;
+    std::string sendMsgStr = sendMsg.dump();
+    sendMsg["cmd"] = "show user reserves";
+    send(commandFd_, sendMsgStr.c_str(), sendMsgStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
-    nlohmann::json recvMessage = json::parse(readBuffer);
+    nlohmann::json recvMsg = json::parse(readBuffer);
+    if (!recvMsg["isEmpty"])
+    {
+        std::cout << "\u2022 Reservations: " << std::endl;
+        for (auto reserve: recvMsg["user"])
+        {
+            std::cout << "  RoomNo:  " << reserve["roomNo"] << std::endl
+                      << "  ReserveDate:          " << reserve["reserveDate"] << std::endl
+                      << "  CheckOutDate:   " << reserve["checkOutDate"] << std::endl
+                      << "  NumOfBeds:         " << reserve["numOfBeds"] << std::endl;
+            std::cout << std::endl;
+        }
+        std::cout << "Please enter the roomNo and numOfBeds of your reservation using command 'cancel <roomNo> <numOfBeds>'" << std::endl;
+        std::string command;
+        std::getline(std::cin, command);
+        std::vector<std::string> tokens = tokenizeCommand(command);
+        nlohmann::json message;
+        if (!isTokenSizeCorrect(tokens.size(), 3) || tokens[0] != "cancel")
+        {
+            std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+            return false;
+        }
+        isRoomCmd_ = false;
+        std::string roomNo = tokens[1];
+        std::string numOfBeds = tokens[2];
+        if (!checkDigits(roomNo) || !checkDigits(numOfBeds))
+        {
+            std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+            return false;
+        }
+        message["cmd"] = "Canceling";
+        message["roomNo"] = roomNo;
+        message["numOfBeds"] = numOfBeds;
+        std::string messageStr = message.dump();
+        send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
+        memset(readBuffer, 0, 1024);
+        recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
+        nlohmann::json recvMessage = json::parse(readBuffer);
+        if (recvMessage["isError"])
+        {
+            std::cout << recvMessage["errorMessage"] << std::endl;
+            return false;
+        }
+        std::cout << recvMessage["errorMessage"] << std::endl;
+    }
+
     return true;
 }
 
 bool Client::passDay()
 {
+    std::cout << "Please enter the number of days to pass by enterin command 'passDay <numberOfDays>'" << std::endl;
     std::string command;
     std::getline(std::cin, command);
     std::vector<std::string> tokens = tokenizeCommand(command);
-    if (!isTokenSizeCorrect(tokens.size(), 2))
+    if (!isTokenSizeCorrect(tokens.size(), 2) || tokens[0] != "passDay")
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
@@ -324,33 +373,38 @@ bool Client::passDay()
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
     message["cmd"] = "pass day";
-    message["value"] = value;
+    message["daysNo"] = stoi(value);
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    if (recvMessage["isError"])
+    {
+        std::cout << recvMessage["errorMessage"] << std::endl;
+        return false;
+    }
     return true;
 }
 
 bool Client::editInfo()
 {
     nlohmann::json message;
-    std::string newPassword, phone, address;
-    std::cin >> newPassword;
-    std::cin >> phone;
-    std::cin >> address;
-    if (!checkDigits(phone))
+    std::string newPassword, newPhone, newAddress;
+    std::getline(std::cin, newPassword);
+    std::getline(std::cin, newPhone);
+    std::getline(std::cin, newAddress);
+    if (!checkDigits(newPhone))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
     message["cmd"] = "Edit information";
     message["newPassWord"] = newPassword;
-    message["phone"] = phone;
-    message["address"] = address;
+    message["newPhone"] = newPhone;
+    message["newAddress"] = newAddress;
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
@@ -362,46 +416,70 @@ bool Client::editInfo()
 bool Client::leaveRoom()
 {
     std::string command;
+    std::cout << "You can leave the room by entering command 'room <roomNo>'" << std::endl;
     std::getline(std::cin, command);
     std::vector<std::string> tokens = tokenizeCommand(command);
     nlohmann::json message;
-    if (isTokenSizeCorrect(tokens.size(), 2))
+    if (!isTokenSizeCorrect(tokens.size(), 2))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
     std::string value = tokens[1];
-    if (!checkDigits(value))
+    if (!checkDigits(value) || tokens[0] != "room")
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
-    std::cout << "You can change the Capacity by entering the corresponding command." << std::endl;
-    isRoomCmd_ = false, isLeavingRoomCmd_ = true;
+    isRoomCmd_ = false;
     message["cmd"] = "Leaving room";
     message["value"] = value;
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    if (recvMessage["isError"])
+    {
+        std::cout << recvMessage["errorMessage"] << std::endl;
+        return false;
+    }
+    else
+        std::cout << recvMessage["errorMessage"] << std::endl;
     return true;
 }
 
-bool Client::changeCapacity(std::string newCap)
+bool Client::freeRoom()
 {
-    if (!checkDigits(newCap))
+    std::string command;
+    std::cout << "You can make the room empty by entering command 'room <roomNo>'" << std::endl;
+    std::getline(std::cin, command);
+    std::vector<std::string> tokens = tokenizeCommand(command);
+    nlohmann::json message;
+    if (!isTokenSizeCorrect(tokens.size(), 2))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
-    nlohmann::json message;
-    isRoomCmd_ = false, isLeavingRoomCmd_ = true;
-    message["cmd"] = CAPACITY;
-    message["newCap"] = newCap;
+    std::string value = tokens[1];
+    if (!checkDigits(value) || tokens[0] != "room")
+    {
+        std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        return false;
+    }
+    isRoomCmd_ = false;
+    message["cmd"] = "free room";
+    message["roomNo"] = value;
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    if (recvMessage["isError"])
+    {
+        std::cout << recvMessage["errorMessage"] << std::endl;
+        return false;
+    }
+    else
+        std::cout << recvMessage["errorMessage"] << std::endl;
     return true;
 }
 
@@ -416,12 +494,12 @@ void Client::roomCommand()
     nlohmann::json recvMessage = json::parse(readBuffer);
     if (!recvMessage["isError"])
     {
-        isRoomCmd_ = true, isLeavingRoomCmd_ = false;
+        isRoomCmd_ = true;
     }
     else if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
-        isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+        isRoomCmd_ = false;
     }
 }
 
@@ -436,15 +514,21 @@ bool Client::addRoom(std::vector<std::string> &tokens)
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
-    isRoomCmd_ = true, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = true;
     message["cmd"] = ADD;
-    message["roomNum"] = roomNo;
+    message["roomNo"] = roomNo;
     message["maxCap"] = maxCap;
     message["price"] = price;
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    if (recvMessage["isError"])
+    {
+        std::cout << recvMessage["errorMessage"] << std::endl;
+        return false;
+    }
+    std::cout << recvMessage["errorMessage"] << std::endl;
     return true;
 }
 
@@ -459,15 +543,21 @@ bool Client::modifyRoom(std::vector<std::string> &tokens)
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
-    isRoomCmd_ = true, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = true;
     message["cmd"] = MODIFY;
-    message["roomNum"] = roomNo;
+    message["roomNo"] = roomNo;
     message["newMaxCap"] = newMaxCap;
     message["newPrice"] = price;
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    if (recvMessage["isError"])
+    {
+        std::cout << recvMessage["errorMessage"] << std::endl;
+        return false;
+    }
+    std::cout << recvMessage["errorMessage"] << std::endl;
     return true;
 }
 
@@ -479,13 +569,19 @@ bool Client::removeRoom(std::string &roomNo)
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
     }
-    isRoomCmd_ = true, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = true;
     message["cmd"] = REMOVE;
-    message["roomNum"] = roomNo;
+    message["roomNo"] = roomNo;
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    if (recvMessage["isError"])
+    {
+        std::cout << recvMessage["errorMessage"] << std::endl;
+        return false;
+    }
+    std::cout << recvMessage["errorMessage"] << std::endl;
     return true;
 }
 
@@ -493,7 +589,8 @@ void Client::logout()
 {
     nlohmann::json message;
     message["cmd"] = "Logout";
-    isRoomCmd_ = false, isLeavingRoomCmd_ = false;
+    isRoomCmd_ = false;
+    hasLoggedIn_ = false;
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
@@ -538,7 +635,10 @@ void Client::run()
         }
 
         else if (cmd == VIEW_ROOMS_INFORMATION && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
-            viewRoomsInfo();
+        {
+            if (!viewRoomsInfo())
+                continue;
+        }    
 
         else if (cmd == BOOKING && hasLoggedIn_)
         {
@@ -570,18 +670,15 @@ void Client::run()
                 continue;
         }
 
-        ////////////////////////////////////////////////////////
-        else if (cmd == CAPACITY && isTokenSizeCorrect(tokens.size(), 2) && isLeavingRoomCmd_)
+        else if (cmd == FREE_ROOM)
         {
-            if (!changeCapacity(tokens[1]))
+            if (!freeRoom())
                 continue;
         }
-            //////////////////////////////////////////////////////////
 
         else if (cmd == ROOMS && isTokenSizeCorrect(tokens.size(), 1) && hasLoggedIn_)
             roomCommand();
 
-        ///////////////////////////////////////////////////////
         else if (cmd == ADD && isTokenSizeCorrect(tokens.size(), 4) && isRoomCmd_ && hasLoggedIn_)
         {
            if (!addRoom(tokens))
@@ -600,9 +697,11 @@ void Client::run()
                 continue;
         }
 
-        //////////////////////////////////////////////////////////////
         else if (cmd == LOGOUT && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
             logout();
+
+        else
+            std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
     }
 }
 

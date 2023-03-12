@@ -77,8 +77,8 @@ json User::editInformation(json command)
     else
     {
         password_ = command["newPassWord"];
-        phoneNumber_ = command["phone"];
-        address_ = command["address"];
+        phoneNumber_ = command["newPhone"];
+        address_ = command["newAddress"];
     }
     response["isError"] = false;
     response["errorMessage"] = INFORMATION_CHANGED;
@@ -88,4 +88,19 @@ json User::editInformation(json command)
 void User::setFd(int fd)
 {
     fd_ = fd;
+}
+
+void User::logout()
+{
+    fd_ = -1;
+}
+
+int User::getMoney()
+{
+    return money_;
+}
+
+void User::pay(int payment)
+{
+    money_ -= payment;
 }

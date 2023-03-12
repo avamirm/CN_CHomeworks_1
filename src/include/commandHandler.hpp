@@ -4,7 +4,6 @@
 #include <string>
 
 #include "hotel.hpp"
-#include "errors.hpp"
 
 #define VIEW_USER_INFORMATION "View user information"
 #define VIEW_ALL_USERS "View all users"
@@ -14,13 +13,14 @@
 #define PASS_DAY "pass day"
 #define EDIT_INFORMATION "Edit information"
 #define LEAVING_ROOM "Leaving room"
+#define FREE_ROOM "free room"
 #define ROOMS "Rooms"
 #define LOGOUT "Logout"
+#define SHOW_USER_RESERVES "show user reserves"
 
 #define ADD "add"
 #define MODIFY "modify"
 #define REMOVE "remove"
-#define CAPACITY "capacity"
 
 #define SIGN_IN "signin"
 #define SIGN_UP "signup"

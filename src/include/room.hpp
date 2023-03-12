@@ -18,7 +18,9 @@ public:
     void setPrice(int price);
     void setFreeCapacity(int freeCapacity);
     void setMaxCapacity(int maxCapacity);
-
+    void makeEmpty();
+    void increaseSpace(int numOfGonePeople);
+    void fill(int numOfBeds);
 private:
     int roomNo_;
     int maxCapacity_;

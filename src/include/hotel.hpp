@@ -4,7 +4,6 @@
 #include "reservation.hpp"
 #include "room.hpp"
 #include "user.hpp"
-#include "errors.hpp"
 #include <vector>
 #include <unordered_map>
 
@@ -33,18 +32,27 @@ public:
     json findUserByName(std::string username, std::string password, int userFd);
     json addUser(json command);
     json viewAllUsers(User *user);
-    json viewRooms(bool isUserAdmin);
+    json viewRooms(bool isUserAdmin, bool isEmptyRoom);
     json editRooms(bool isUserAdmin);
     json addNewRoom(json command);
     json modifyRoom(json command);
     json removeRoom(json command);
     json leavingRoom(User *user, int value);
-    json changeCapacity(int value, int capacity, bool isUserAdmin);
+    json emptyRoom(int roomNo, bool isUserAdmin);
     void addRooms(json &rooms);
     void addUsers(json &users);
     void setDate(date::year_month_day date);
     void setUserFd(User* user, int userFd);
     json checkUsernameExistance(std::string username);
+    bool doesRoomExist(int roomNo);
+    json logoutUser(User* user);
+    json passDay(int daysNo, bool isUserAdmin);
+    date::year_month_day convertDate(std::string date);
+    json booking(User *user, json command);
+    bool doesHaveTimeConflict(date::year_month_day reserveDate1, date::year_month_day checkOutDate1, 
+                                 date::year_month_day reserveDate2, date::year_month_day checkOutDate2);
+    json showUserReserves(User* user);
+    json canceling(User* user, json command);
 private:
     std::unordered_map<int, User> users_;
     std::unordered_map<int, std::vector<Reservation>> reservations_;

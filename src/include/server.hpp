@@ -2,7 +2,6 @@
 #define SERVER_HPP
 
 #include "commandHandler.hpp"
-#include "errors.hpp"
 
 #include <vector>
 #include <string.h>

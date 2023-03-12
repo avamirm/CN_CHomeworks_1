@@ -21,19 +21,19 @@ $(OUT_SERVER): $(addprefix $(PATH_OBJ)/, $(OBJS_SERVER))
 $(OUT_CLIENT): $(addprefix $(PATH_OBJ)/, $(OBJS_CLIENT))
 	$(CC) -o $@ $^
 
-$(PATH_OBJ)/server.o: server.cpp server.hpp commandHandler.hpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp date.hpp
+$(PATH_OBJ)/server.o: server.cpp server.hpp commandHandler.hpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp date.hpp errors.hpp
 	$(CC) -c $< -o $@
 
-$(PATH_OBJ)/client.o: client.cpp client.hpp json.hpp date.hpp
+$(PATH_OBJ)/client.o: client.cpp client.hpp json.hpp date.hpp errors.hpp
 	$(CC) -c $< -o $@	
 
-$(PATH_OBJ)/commandHandler.o: commandHandler.cpp commandHandler.hpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp date.hpp
+$(PATH_OBJ)/commandHandler.o: commandHandler.cpp commandHandler.hpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp date.hpp errors.hpp
 	$(CC) -c $< -o $@
 
-$(PATH_OBJ)/hotel.o: hotel.cpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp date.hpp
+$(PATH_OBJ)/hotel.o: hotel.cpp hotel.hpp user.hpp room.hpp reservation.hpp json.hpp date.hpp errors.hpp
 	$(CC) -c $< -o $@
 
-$(PATH_OBJ)/user.o: user.cpp user.hpp json.hpp
+$(PATH_OBJ)/user.o: user.cpp user.hpp json.hpp errors.hpp
 	$(CC) -c $< -o $@
 
 $(PATH_OBJ)/room.o: room.cpp room.hpp

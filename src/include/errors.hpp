@@ -20,5 +20,6 @@
 #define INVALID_USERNAME_OR_PASSWORD "Error 430: Invalid username or password."
 #define USER_EXISTED "Error 451: User already existed!"
 #define BAD_SEQUENCE_OF_COMMANDS "Error 503: Bad sequence of commands."
-
+#define LOGOUT_SUCCESSFULLY "Error 201: User logged out successfully."
+#define SUCCESSFULLY_DONE "Error 110: Successfully done."
 #endif
