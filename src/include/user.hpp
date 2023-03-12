@@ -24,6 +24,7 @@ public:
     void logout();
     int getMoney();
     void pay(int payment);
+    void getBackMoney(int money);
 private:
     std::string username_;
     std::string password_;

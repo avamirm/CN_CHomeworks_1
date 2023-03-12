@@ -112,12 +112,13 @@ bool Client::signUpCommand(std::string &username)
     else
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
-        // std::cout << USER_SIGNED_UP;
         recvMessage["cmd"] = "SuccessSignup";
         recvMessage["username"] = username;
         std::string password, purse, phone, address;
+        std::cout << "password: ";
         std::getline(std::cin, password);
         recvMessage["password"] = password;
+        std::cout << "money: ";
         std::getline(std::cin, purse);
         if (!checkDigits(purse))
         {
@@ -125,14 +126,16 @@ bool Client::signUpCommand(std::string &username)
             return false;
         }
         recvMessage["money"] = purse;
+        std::cout << "phone: ";
         std::getline(std::cin, phone);
-        if (!checkDigits(phone))
+        if (!checkDigits(phone) || phone.length() != 11)
         {
             std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
             return false;
         }
         recvMessage["phoneNumber"] = phone;
-        std::getline(std::cin, address);/////////////////////////////////////////////////////change to getline
+        std::cout << "address: ";
+        std::getline(std::cin, address);
         recvMessage["address"] = address;
         std::string messageStr = recvMessage.dump();
         if (send(commandFd_, messageStr.c_str(), messageStr.size(), 0) < 0)
@@ -255,12 +258,12 @@ bool Client::viewRoomsInfo()
 
 bool Client::booking()
 {
-
+    std::cout << "Please book your favorite room by entering command: book <roomNo> <numOfBeds> <checkInDate> <checkOutDate>" << std::endl;
     std::string command;
     std::getline(std::cin, command);
     std::vector<std::string> tokens = tokenizeCommand(command);
     nlohmann::json message;
-    if (!isTokenSizeCorrect(tokens.size(), 5))
+    if (!isTokenSizeCorrect(tokens.size(), 5) || tokens[0] != "book")
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
@@ -302,8 +305,8 @@ bool Client::booking()
 bool Client::canceling()
 {
     nlohmann::json sendMsg;
-    std::string sendMsgStr = sendMsg.dump();
     sendMsg["cmd"] = "show user reserves";
+     std::string sendMsgStr = sendMsg.dump();
     send(commandFd_, sendMsgStr.c_str(), sendMsgStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMsg = json::parse(readBuffer);
@@ -313,12 +316,12 @@ bool Client::canceling()
         for (auto reserve: recvMsg["user"])
         {
             std::cout << "  RoomNo:  " << reserve["roomNo"] << std::endl
-                      << "  ReserveDate:          " << reserve["reserveDate"] << std::endl
-                      << "  CheckOutDate:   " << reserve["checkOutDate"] << std::endl
-                      << "  NumOfBeds:         " << reserve["numOfBeds"] << std::endl;
+                      << "  ReserveDate:  " << reserve["reserveDate"] << std::endl
+                      << "  CheckOutDate:  " << reserve["checkOutDate"] << std::endl
+                      << "  NumOfBeds:  " << reserve["numOfBeds"] << std::endl;
             std::cout << std::endl;
         }
-        std::cout << "Please enter the roomNo and numOfBeds of your reservation using command 'cancel <roomNo> <numOfBeds>'" << std::endl;
+        std::cout << "Please enter the roomNo and numOfBeds of your reservation using command: cancel <roomNo> <numOfBeds>" << std::endl;
         std::string command;
         std::getline(std::cin, command);
         std::vector<std::string> tokens = tokenizeCommand(command);
@@ -357,7 +360,7 @@ bool Client::canceling()
 
 bool Client::passDay()
 {
-    std::cout << "Please enter the number of days to pass by enterin command 'passDay <numberOfDays>'" << std::endl;
+    std::cout << "Please enter the number of days to pass by enterin command: passDay <numberOfDays>" << std::endl;
     std::string command;
     std::getline(std::cin, command);
     std::vector<std::string> tokens = tokenizeCommand(command);
@@ -392,10 +395,13 @@ bool Client::editInfo()
 {
     nlohmann::json message;
     std::string newPassword, newPhone, newAddress;
+    std::cout << "newPassword: ";
     std::getline(std::cin, newPassword);
+    std::cout << "newPhone: ";
     std::getline(std::cin, newPhone);
+    std::cout << "newAddress: ";
     std::getline(std::cin, newAddress);
-    if (!checkDigits(newPhone))
+    if (!checkDigits(newPhone) || newPhone.length() != 11)
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
         return false;
@@ -416,7 +422,7 @@ bool Client::editInfo()
 bool Client::leaveRoom()
 {
     std::string command;
-    std::cout << "You can leave the room by entering command 'room <roomNo>'" << std::endl;
+    std::cout << "You can leave the room by entering command: room <roomNo>" << std::endl;
     std::getline(std::cin, command);
     std::vector<std::string> tokens = tokenizeCommand(command);
     nlohmann::json message;
@@ -451,7 +457,7 @@ bool Client::leaveRoom()
 bool Client::freeRoom()
 {
     std::string command;
-    std::cout << "You can make the room empty by entering command 'room <roomNo>'" << std::endl;
+    std::cout << "You can make the room empty by entering command: room <roomNo>" << std::endl;
     std::getline(std::cin, command);
     std::vector<std::string> tokens = tokenizeCommand(command);
     nlohmann::json message;
@@ -486,7 +492,7 @@ bool Client::freeRoom()
 void Client::roomCommand()
 {
     nlohmann::json message;
-    std::cout << "You can Add / Modify / Remove rooms by entering the corresponding command." << std::endl;
+    std::cout << ROOM_HELP << std::endl;
     message["cmd"] = "Rooms";
     std::string messageStr = message.dump();
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
@@ -611,8 +617,13 @@ void Client::run()
     std::string command;
     commandFd_ = connectServer(port_, hostname_);
     std::vector<std::string> tokens;
-    while (std::getline(std::cin, command))
+    while (true)
     {
+        if (hasLoggedIn_)
+            std::cout << HELP << std::endl;
+        else
+            std::cout << SIGNUP_IN_HELP << std::endl;
+        std::getline(std::cin, command);
         tokens = tokenizeCommand(command);
         std::string cmd = tokens[0];
         memset(readBuffer, 0, 1024);

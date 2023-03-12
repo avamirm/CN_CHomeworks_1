@@ -507,12 +507,14 @@ json Hotel::canceling(User* user, json command)
    std::vector < Reservation> resCpy (reservations_[roomNo].begin(), reservations_[roomNo].end());
    for (int i = resCpy.size()-1; i >=0; i--)
    {
-        if (reservations_[roomNo][i].getUserId() == user->getId() && reservations_[roomNo][i].getNumOfBeds() >= numOfBeds)
+        date::year_month_day reserveDate = convertDate(reservations_[roomNo][i].getReserveDate());
+        if (reservations_[roomNo][i].getUserId() == user->getId() && reservations_[roomNo][i].getNumOfBeds() >= numOfBeds && date_ < reserveDate)
         {
             response["isError"] = false;
             response["errorMessage"] = SUCCESSFULLY_DONE;
             Room room = rooms_.find(roomNo)->second;
             room.increaseSpace(numOfBeds);
+            user->getBackMoney(numOfBeds*room.getPrice());
             reservations_[roomNo].erase(reservations_[roomNo].begin()+i);
             return response;
         }

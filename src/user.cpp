@@ -104,3 +104,8 @@ void User::pay(int payment)
 {
     money_ -= payment;
 }
+
+void User::getBackMoney(int money)
+{
+    money_ += money/2;
+}
