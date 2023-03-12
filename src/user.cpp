@@ -45,6 +45,16 @@ int User::getId()
     return id_;
 }
 
+int User::getMoney()
+{
+    return money_;
+}
+
+void User::setMoney(int money)
+{
+    money_ = money;
+}
+
 json User::viewInfo(bool isSelfInfo)
 {
     json info;
