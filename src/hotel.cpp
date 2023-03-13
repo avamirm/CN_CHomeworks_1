@@ -238,6 +238,7 @@ json Hotel::leavingRoom(User *user, int roomNo)
     response["errorMessage"] = RESERVE_NOT_FOUND;
     return response;
 }
+
 date::year_month_day Hotel::convertDate(std::string date)
 {
     std::istringstream ss(date);
