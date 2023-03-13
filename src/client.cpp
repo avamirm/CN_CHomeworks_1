@@ -13,6 +13,7 @@ Client::Client()
     hasLoggedIn_ = false;
     isRoomCmd_ = false;
     readConfig();
+    logger_ = Logger();
 }
 
 int Client::connectServer(const int port, const std::string host)
@@ -71,6 +72,12 @@ std::vector<std::string> Client::tokenizeCommand(std::string command)
     return tokens;
 }
 
+void Client::setupLogger(std::string username)
+{
+    std::string path = "clients/" + username + ".json";
+    logger_.setPath(path);
+}
+
 void Client::signInCommand(std::vector<std::string> &tokens)
 {
     nlohmann::json message;
@@ -89,6 +96,8 @@ void Client::signInCommand(std::vector<std::string> &tokens)
     if (!recvMessage["isError"])
     {
         hasLoggedIn_ = true;
+        setupLogger(username);
+        logger_.log("logged in.", false);
     }
     std::cout << recvMessage["errorMessage"] << std::endl;
 }
@@ -171,6 +180,7 @@ void Client::viewUserInfoCommand()
                   << "  Money:     " << recvMessage["money"] << std::endl
                   << "  Address:   " << recvMessage["address"] << std::endl;
     }
+    logger_.log("view user information.", false);
 }
 
 bool Client::viewAllUsers()
@@ -185,8 +195,10 @@ bool Client::viewAllUsers()
     if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("view all users information.", true);
         return false;
     }
+    logger_.log("view all users information.", false);
     std::cout << "\u2022 Users Info:" << std::endl;
     for (auto user: recvMessage["users"])
     {
@@ -220,12 +232,19 @@ bool Client::viewRoomsInfo()
     std::string choice;
     std::getline(std::cin, choice);
     if (choice == "1")
+    {
         message["emptyRooms"] = true;
+        logger_.log("view empty rooms information.", false);
+    }
     else if (choice == "2")
+    {
         message["emptyRooms"] = false;
+        logger_.log("view all rooms information.", false);
+    }
     else
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("view rooms information.", true);
         return false;
     }
         
@@ -266,6 +285,7 @@ bool Client::booking()
     if (!isTokenSizeCorrect(tokens.size(), 5) || tokens[0] != "book")
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("booking", true);
         return false;
     }
     isRoomCmd_ = false;
@@ -277,12 +297,14 @@ bool Client::booking()
     if (!checkDigits(roomNo) || !checkDigits(numOfBeds))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("booking", true);
         return false;
     }
 
     if (!checkDate(checkInDate) || !checkDate(checkOutDate))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("booking", true);
         return false;
     }
     message["cmd"] = "Booking";
@@ -297,8 +319,10 @@ bool Client::booking()
     if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("booking", true);
         return false;
     }
+    logger_.log("booking roomNo: " + roomNo, false);
     return true;
 }
 
@@ -350,9 +374,11 @@ bool Client::canceling()
         if (recvMessage["isError"])
         {
             std::cout << recvMessage["errorMessage"] << std::endl;
+            logger_.log("canceling", true);
             return false;
         }
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("canceling roomNo: " + roomNo, false);
     }
 
     return true;
@@ -367,6 +393,7 @@ bool Client::passDay()
     if (!isTokenSizeCorrect(tokens.size(), 2) || tokens[0] != "passDay")
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("pass day", true);
         return false;
     }
     nlohmann::json message;
@@ -374,6 +401,7 @@ bool Client::passDay()
     if (!checkDigits(value))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("pass day", true);
         return false;
     }
     isRoomCmd_ = false;
@@ -386,8 +414,10 @@ bool Client::passDay()
     if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("pass day", true);
         return false;
     }
+    logger_.log("pass day: " + value, true);
     return true;
 }
 
@@ -404,6 +434,7 @@ bool Client::editInfo()
     if (!checkDigits(newPhone) || newPhone.length() != 11)
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("edit information", true);
         return false;
     }
     isRoomCmd_ = false;
@@ -416,6 +447,7 @@ bool Client::editInfo()
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
     std::cout << recvMessage["errorMessage"] << std::endl;
+    logger_.log("edit information", false);
     return true;
 }
 
@@ -429,12 +461,14 @@ bool Client::leaveRoom()
     if (!isTokenSizeCorrect(tokens.size(), 2))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("leaving room", true);
         return false;
     }
     std::string value = tokens[1];
     if (!checkDigits(value) || tokens[0] != "room")
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("leaving room", true);
         return false;
     }
     isRoomCmd_ = false;
@@ -447,10 +481,11 @@ bool Client::leaveRoom()
     if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("leaving room", true);
         return false;
     }
-    else
-        std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage["errorMessage"] << std::endl;
+    logger_.log("leaving room roomNo: "  + value, false);
     return true;
 }
 
@@ -464,12 +499,14 @@ bool Client::freeRoom()
     if (!isTokenSizeCorrect(tokens.size(), 2))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("empty room", true);
         return false;
     }
     std::string value = tokens[1];
     if (!checkDigits(value) || tokens[0] != "room")
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("empty room", true);
         return false;
     }
     isRoomCmd_ = false;
@@ -482,10 +519,11 @@ bool Client::freeRoom()
     if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("empty room", true);
         return false;
     }
-    else
-        std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage["errorMessage"] << std::endl;
+    logger_.log("empty room roomNo: "+ value, false);
     return true;
 }
 
@@ -506,6 +544,7 @@ void Client::roomCommand()
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
         isRoomCmd_ = false;
+        logger_.log("room", true);
     }
 }
 
@@ -518,6 +557,7 @@ bool Client::addRoom(std::vector<std::string> &tokens)
     if (!checkDigits(roomNo) || !checkDigits(maxCap) || !checkDigits(price))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("add room", true);
         return false;
     }
     isRoomCmd_ = true;
@@ -532,9 +572,11 @@ bool Client::addRoom(std::vector<std::string> &tokens)
     if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("add room", true);
         return false;
     }
     std::cout << recvMessage["errorMessage"] << std::endl;
+    logger_.log("add room roomNo: "+ roomNo, false);
     return true;
 }
 
@@ -547,6 +589,7 @@ bool Client::modifyRoom(std::vector<std::string> &tokens)
     if (!checkDigits(roomNo) || !checkDigits(newMaxCap) || !checkDigits(price))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("modify room", true);
         return false;
     }
     isRoomCmd_ = true;
@@ -561,9 +604,11 @@ bool Client::modifyRoom(std::vector<std::string> &tokens)
     if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("modify room", true);
         return false;
     }
     std::cout << recvMessage["errorMessage"] << std::endl;
+    logger_.log("modify room roomNo: " + roomNo, true);
     return true;
 }
 
@@ -573,6 +618,7 @@ bool Client::removeRoom(std::string &roomNo)
     if (!checkDigits(roomNo))
     {
         std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;
+        logger_.log("remove room", true);
         return false;
     }
     isRoomCmd_ = true;
@@ -585,9 +631,11 @@ bool Client::removeRoom(std::string &roomNo)
     if (recvMessage["isError"])
     {
         std::cout << recvMessage["errorMessage"] << std::endl;
+        logger_.log("remove room", true);
         return false;
     }
     std::cout << recvMessage["errorMessage"] << std::endl;
+    logger_.log("remove room roomNo: " + roomNo, false);
     return true;
 }
 
@@ -601,6 +649,7 @@ void Client::logout()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
+    logger_.log("logged out", false);
 }
 
 void Client::readConfig()

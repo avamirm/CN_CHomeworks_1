@@ -2,7 +2,8 @@
 #define SERVER_HPP
 
 #include "commandHandler.hpp"
-
+#include "date.hpp"
+#include "logger.hpp"
 #include <vector>
 #include <string.h>
 #include <sys/stat.h>
@@ -12,7 +13,6 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <iostream>
-#include "date.hpp"
 #include <chrono>
 #include <sstream>
 
@@ -21,6 +21,7 @@
 #define SET_TIME "setTime"
 #define SIGN_IN "signin"
 #define SIGN_UP "signup"
+#define SERVER_LOGS "serverLogs.json"
 
 class Server
 {
@@ -42,6 +43,7 @@ private:
     CommandHandler commandHandler_;
     int port_;
     std::string hostname_;
+    Logger logger_;
 };
 
 #endif

@@ -3,18 +3,19 @@
 
 #include "json.hpp"
 #include "errors.hpp"
+#include "date.hpp"
+#include "logger.hpp"
 
 #include <sstream>
 #include <iostream>
 #include <string>
 #include <vector>
-#include "date.hpp"
 #include <chrono>
 
 #define SET_TIME "setTime"
 #define SIGN_IN "signin"
 #define SIGN_UP "signup"
-#define CONFIG_FILE "config.json"
+#define CONFIG_FILE "jsonFiles/config.json"
 
 const std::string HELP =  "Please enter the number of your choice.\n"
                 "\u2022 1) View User Information \n" 
@@ -55,11 +56,6 @@ using json = nlohmann::json;
 #define REMOVE "remove"
 
 
-// #define USER_LOGGED_IN "230: User logged in."
-// #define USER_SIGNED_UP "311: User Signed up. Enter your password, purse, phone and address."
-// #define INVALID_USERNAME_OR_PASSWORD "430: Invalid username or password."
-// #define BAD_SEQUENCE_OF_COMMANDS "503: Bad sequence of commands."
-
 class Client
 {
 public:
@@ -87,6 +83,7 @@ public:
     bool removeRoom(std::string &roomNo);
     void logout();
     void readConfig();
+    void setupLogger(std::string username);
 
 private:
     bool hasLoggedIn_;
@@ -96,6 +93,7 @@ private:
     char readBuffer[1024];
     int port_;
     std::string hostname_;
+    Logger logger_;
 };
 
 #endif

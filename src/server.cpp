@@ -12,6 +12,8 @@ Server::Server()
     commandHandler_ = commandHandler;
     commandHandler_.setRooms(rooms);
     commandHandler_.setUsers(users);
+    logger_ = Logger();
+    logger_.setPath(SERVER_LOGS);
     cout << "Server is running on port " << port_ << endl;
 }
 
@@ -153,7 +155,7 @@ void Server::start()
             perror("select");
 
         if (FD_ISSET(server_fd, &working_set))
-        { // new clinet
+        { // new client
             new_socket = acceptClient(server_fd);
             FD_SET(new_socket, &master_set);
             if (new_socket > max_sd)
@@ -169,7 +171,7 @@ void Server::start()
                     int bytes_received;
                     bytes_received = recv(i, buffer, 1024, 0);
                     if (bytes_received == 0)
-                    { // EOF
+                    { 
                         printf("client fd = %d closed\n", i);
                         close(i);
                         FD_CLR(i, &master_set);
@@ -177,7 +179,7 @@ void Server::start()
                     }
                     nlohmann::json message = json::parse(buffer);
                     nlohmann::json sendMsg = commandHandler_.runCommand(message, i);
-                    printf("client %d: %s\n", i, buffer);
+                    logger_.log(message, i);
                     memset(buffer, 0, 1024);
                     std::string sendMsgstr = sendMsg.dump();
                     if (send(i, sendMsgstr.c_str(), sendMsgstr.size(), 0) < 0)
