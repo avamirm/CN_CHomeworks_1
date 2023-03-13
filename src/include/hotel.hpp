@@ -4,27 +4,26 @@
 #include "reservation.hpp"
 #include "room.hpp"
 #include "user.hpp"
-<<<<<<< HEAD == == == =
-#include "errors.hpp"
-#include "date.hpp"
-               >>>>>>> 6642cd2 (add README)
 #include <vector>
 #include <unordered_map>
+#include <fstream>
 
-    // #define ROOM_NOT_FOUND "Error 101: The desired room was not found."
-    // #define RESERVE_NOT_FOUND "Error 102: Your reservation was not found."
-    // #define SUCCESSFULLY_ADDED "Error 104: Successfully added."
-    // #define SUCCESSFULLY_MODIFIED "Error 105: Successfully modified."
-    // #define SUCCESSFULLY_DELETED "Error 106: Successfully deleted."
-    // #define LOW_BALANCE "Error 108: Your account balance is not enough."
-    // #define ROOM_IS_FULL "Error 109: The room capacity is full."
-    // #define ROOM_EXIST "Error 111: This room already exists."
-    // #define USER_SUCCESSFULLY_SIGN_UP "Error 231: User successfully signed up."
-    // #define ACCESS_DENIED "Error 403: Access Denied."
-    // #define INVALID_CAPACITY "Error 412: Invalid capacity value!"
-    // #define SUCCESSFULLY_LEAVING "Error 413: Successfully leaving."
+#define ROOMS_FILE "jsonFiles/RoomsInfo.json"
+#define USERS_FILE "jsonFiles/UsersInfo.json"
+// #define ROOM_NOT_FOUND "Error 101: The desired room was not found."
+// #define RESERVE_NOT_FOUND "Error 102: Your reservation was not found."
+// #define SUCCESSFULLY_ADDED "Error 104: Successfully added."
+// #define SUCCESSFULLY_MODIFIED "Error 105: Successfully modified."
+// #define SUCCESSFULLY_DELETED "Error 106: Successfully deleted."
+// #define LOW_BALANCE "Error 108: Your account balance is not enough."
+// #define ROOM_IS_FULL "Error 109: The room capacity is full."
+// #define ROOM_EXIST "Error 111: This room already exists."
+// #define USER_SUCCESSFULLY_SIGN_UP "Error 231: User successfully signed up."
+// #define ACCESS_DENIED "Error 403: Access Denied."
+// #define INVALID_CAPACITY "Error 412: Invalid capacity value!"
+// #define SUCCESSFULLY_LEAVING "Error 413: Successfully leaving."
 
-    class Hotel
+class Hotel
 {
 public:
     Hotel();
@@ -38,9 +37,6 @@ public:
     json viewAllUsers(User *user);
     json viewRooms(bool isUserAdmin, bool isEmptyRoom);
     json editRooms(bool isUserAdmin);
-    json booking(User *user, json command);
-    json canceling(std::string value);
-    json passDay(std::string value, bool isUserAdmin);
     json addNewRoom(json command);
     json modifyRoom(json command);
     json removeRoom(json command);
@@ -49,18 +45,20 @@ public:
     void addRooms(json &rooms);
     void addUsers(json &users);
     void setDate(date::year_month_day date);
-    void setUserFd(User *user, int userFd);
+    void setUserFd(User* user, int userFd);
     json checkUsernameExistance(std::string username);
     bool doesRoomExist(int roomNo);
-    json logoutUser(User *user);
+    json logoutUser(User* user);
     json passDay(int daysNo, bool isUserAdmin);
     date::year_month_day convertDate(std::string date);
     json booking(User *user, json command);
-    bool doesHaveTimeConflict(date::year_month_day reserveDate1, date::year_month_day checkOutDate1,
-                              date::year_month_day reserveDate2, date::year_month_day checkOutDate2);
-    json showUserReserves(User *user);
-    json canceling(User *user, json command);
-
+    bool doesHaveTimeConflict(date::year_month_day reserveDate1, date::year_month_day checkOutDate1, 
+                                 date::year_month_day reserveDate2, date::year_month_day checkOutDate2);
+    json showUserReserves(User* user);
+    json canceling(User* user, json command);
+    void updateRoomsFile();
+    void updateUsersFile();
+    date::year_month_day findLastCheckOut(int roomNo);
 private:
     std::unordered_map<int, User> users_;
     std::unordered_map<int, std::vector<Reservation>> reservations_;

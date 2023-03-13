@@ -16,8 +16,6 @@ public:
     std::string getPassword();
     int getFd();
     int getId();
-    int getMoney();
-    void setMoney(int money);
     void setInfo(std::string &password, int id, std::string &phoneNumber, std::string &address, int money);
     json viewInfo(bool isSelfInfo);
     json editInformation(json command);
@@ -27,6 +25,10 @@ public:
     int getMoney();
     void pay(int payment);
     void getBackMoney(int money);
+    std::string getPhoneNumber();
+    std::string getAddress();
+    bool getIsAdmin();
+
 private:
     std::string username_;
     std::string password_;

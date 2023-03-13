@@ -45,7 +45,7 @@ json CommandHandler::runCommand(json command, int userFd)
 
     bool isUserAdmin = false;
     if (user != nullptr)
-        isUserAdmin = user->isAdmin(); /////////////////////////////////////////
+        isUserAdmin = user->isAdmin();      /////////////////////////////////////////
 
     if (cmd == SIGN_IN)
         respond = hotel_.findUserByName(command["username"].get<std::string>(), command["password"].get<std::string>(), userFd);
@@ -67,7 +67,10 @@ json CommandHandler::runCommand(json command, int userFd)
     else if (cmd == CANCELING)
         respond = hotel_.canceling(user, command);
     else if (cmd == EDIT_INFORMATION)
+    {
         respond = user->editInformation(command);
+        hotel_.updateUsersFile();
+    }
     else if (cmd == LEAVING_ROOM)
     {
         std::string value = command["value"];

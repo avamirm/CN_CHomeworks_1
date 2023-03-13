@@ -1,9 +1,10 @@
 CC=g++ -g --std=c++20
 
-OUT_SERVER = server
-OUT_CLIENT = client
 PATH_SRC := src
 PATH_BUILD := build
+PATH_BIN := bin
+OUT_SERVER = $(PATH_BIN)/server
+OUT_CLIENT = $(PATH_BIN)/client
 PATH_INC := $(PATH_SRC)/include
 PATH_OBJ := $(PATH_BUILD)/obj
 
@@ -44,9 +45,10 @@ $(PATH_OBJ)/reservation.o: reservation.cpp reservation.hpp
 
 $(PATH_BUILD): ; mkdir -p $@
 $(PATH_OBJ): ; mkdir -p $@
+$(PATH_BIN): ; mkdir -p $@
 
 .PHONY: all clean
 
 clean:
-	rm -r $(PATH_BUILD) > /dev/null
-	rm -f $(OUTPUT) > /dev/null
+	rm -rf $(PATH_BUILD) > /dev/null
+	rm -rf $(PATH_BIN) > /dev/null

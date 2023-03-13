@@ -45,16 +45,6 @@ int User::getId()
     return id_;
 }
 
-int User::getMoney()
-{
-    return money_;
-}
-
-void User::setMoney(int money)
-{
-    money_ = money;
-}
-
 json User::viewInfo(bool isSelfInfo)
 {
     json info;
@@ -118,4 +108,19 @@ void User::pay(int payment)
 void User::getBackMoney(int money)
 {
     money_ += money/2;
+}
+
+std::string User::getPhoneNumber()
+{
+    return phoneNumber_;
+}
+
+std::string User::getAddress()
+{
+    return address_;
+}
+
+bool User::getIsAdmin()
+{
+    return isAdmin_;
 }

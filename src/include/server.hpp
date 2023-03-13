@@ -16,9 +16,7 @@
 #include <chrono>
 #include <sstream>
 
-#define ROOMS_FILE "RoomsInfo.json"
-#define USERS_FILE "UsersInfo.json"
-#define CONFIG_FILE "config.json"
+#define CONFIG_FILE "jsonFiles/config.json"
 
 #define SET_TIME "setTime"
 #define SIGN_IN "signin"
