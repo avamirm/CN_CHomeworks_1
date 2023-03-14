@@ -22,4 +22,6 @@
 #define BAD_SEQUENCE_OF_COMMANDS "Error 503: Bad sequence of commands."
 #define LOGOUT_SUCCESSFULLY "Success 201: User logged out successfully."
 #define SUCCESSFULLY_DONE "Success 110: Successfully done."
+#define IS_ERROR "isError"
+#define ERROR_MSG "errorMessage"
 #endif

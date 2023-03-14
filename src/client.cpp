@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include <iostream>
 #include <fstream>
@@ -93,13 +94,13 @@ void Client::signInCommand(std::vector<std::string> &tokens)
     if (recv(commandFd_, readBuffer, sizeof(readBuffer), 0) < 0)
         perror("recieve");
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (!recvMessage["isError"])
+    if (!recvMessage[IS_ERROR])
     {
         hasLoggedIn_ = true;
         setupLogger(username);
         logger_.log("logged in.", false);
     }
-    std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage[ERROR_MSG] << std::endl;
 }
 
 bool Client::signUpCommand(std::string &username)
@@ -113,14 +114,14 @@ bool Client::signUpCommand(std::string &username)
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
 
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         return false;
     }    
     else
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         recvMessage["cmd"] = "SuccessSignup";
         recvMessage["username"] = username;
         std::string password, purse, phone, address;
@@ -153,7 +154,7 @@ bool Client::signUpCommand(std::string &username)
         if (recv(commandFd_, readBuffer, sizeof(readBuffer), 0) < 0)
             perror("recieve");
         nlohmann::json recvMessage = json::parse(readBuffer);
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
     }
     return true;
 }
@@ -192,9 +193,9 @@ bool Client::viewAllUsers()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("view all users information.", true);
         return false;
     }
@@ -316,9 +317,9 @@ bool Client::booking()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("booking", true);
         return false;
     }
@@ -371,13 +372,13 @@ bool Client::canceling()
         memset(readBuffer, 0, 1024);
         recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
         nlohmann::json recvMessage = json::parse(readBuffer);
-        if (recvMessage["isError"])
+        if (recvMessage[IS_ERROR])
         {
-            std::cout << recvMessage["errorMessage"] << std::endl;
+            std::cout << recvMessage[ERROR_MSG] << std::endl;
             logger_.log("canceling", true);
             return false;
         }
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("canceling roomNo: " + roomNo, false);
     }
 
@@ -411,9 +412,9 @@ bool Client::passDay()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("pass day", true);
         return false;
     }
@@ -446,7 +447,7 @@ bool Client::editInfo()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage[ERROR_MSG] << std::endl;
     logger_.log("edit information", false);
     return true;
 }
@@ -478,13 +479,13 @@ bool Client::leaveRoom()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("leaving room", true);
         return false;
     }
-    std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage[ERROR_MSG] << std::endl;
     logger_.log("leaving room roomNo: "  + value, false);
     return true;
 }
@@ -516,13 +517,13 @@ bool Client::freeRoom()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("empty room", true);
         return false;
     }
-    std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage[ERROR_MSG] << std::endl;
     logger_.log("empty room roomNo: "+ value, false);
     return true;
 }
@@ -536,13 +537,13 @@ void Client::roomCommand()
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (!recvMessage["isError"])
+    if (!recvMessage[IS_ERROR])
     {
         isRoomCmd_ = true;
     }
-    else if (recvMessage["isError"])
+    else if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         isRoomCmd_ = false;
         logger_.log("room", true);
     }
@@ -569,13 +570,13 @@ bool Client::addRoom(std::vector<std::string> &tokens)
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("add room", true);
         return false;
     }
-    std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage[ERROR_MSG] << std::endl;
     logger_.log("add room roomNo: "+ roomNo, false);
     return true;
 }
@@ -601,13 +602,13 @@ bool Client::modifyRoom(std::vector<std::string> &tokens)
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("modify room", true);
         return false;
     }
-    std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage[ERROR_MSG] << std::endl;
     logger_.log("modify room roomNo: " + roomNo, true);
     return true;
 }
@@ -628,13 +629,13 @@ bool Client::removeRoom(std::string &roomNo)
     send(commandFd_, messageStr.c_str(), messageStr.size(), 0);
     recv(commandFd_, readBuffer, sizeof(readBuffer), 0);
     nlohmann::json recvMessage = json::parse(readBuffer);
-    if (recvMessage["isError"])
+    if (recvMessage[IS_ERROR])
     {
-        std::cout << recvMessage["errorMessage"] << std::endl;
+        std::cout << recvMessage[ERROR_MSG] << std::endl;
         logger_.log("remove room", true);
         return false;
     }
-    std::cout << recvMessage["errorMessage"] << std::endl;
+    std::cout << recvMessage[ERROR_MSG] << std::endl;
     logger_.log("remove room roomNo: " + roomNo, false);
     return true;
 }
@@ -759,6 +760,12 @@ void Client::run()
 
         else if (cmd == LOGOUT && hasLoggedIn_ && isTokenSizeCorrect(tokens.size(), 1))
             logout();
+
+        else if (cmd == EXIT && !hasLoggedIn_)
+        {
+            close(commandFd_);
+            return;
+        }
 
         else
             std::cout << BAD_SEQUENCE_OF_COMMANDS << std::endl;

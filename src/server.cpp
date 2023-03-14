@@ -112,7 +112,7 @@ void Server::setDate()
     while (!isDateCorrect)
     {
         std::string date;
-        printf("Enter the date:\n");
+        printf("Enter the date -> setTime <year-month-day>:\n");
         std::getline(std::cin, date);
         std::vector<std::string> tokens = tokenizeCommand(date);
         if (tokens.size() != 2 || tokens[0] != SET_TIME)
@@ -146,6 +146,7 @@ void Server::start()
     FD_ZERO(&master_set);
     max_sd = server_fd;
     FD_SET(server_fd, &master_set);
+    FD_SET(STDIN_FILENO, &master_set);
     setDate();
 
     while (1)
@@ -153,8 +154,19 @@ void Server::start()
         working_set = master_set;
         if (select(max_sd + 1, &working_set, NULL, NULL, NULL) < 0)
             perror("select");
-
-        if (FD_ISSET(server_fd, &working_set))
+        if (FD_ISSET(STDIN_FILENO, &working_set))
+        {
+            memset(buffer, 0, 1024);
+            read(STDIN_FILENO, buffer, 1024);
+            if (std::string(buffer) == "exit\n")
+            {
+                for (int j = 1; j < max_sd + 1; j++)
+                    if (FD_ISSET(j, &master_set))   
+                        close(j);
+                return;
+            }
+        }
+        else if (FD_ISSET(server_fd, &working_set))
         { // new client
             new_socket = acceptClient(server_fd);
             FD_SET(new_socket, &master_set);
@@ -169,6 +181,7 @@ void Server::start()
                 if (FD_ISSET(i, &working_set))
                 {
                     int bytes_received;
+                    memset(buffer, 0, 1024);
                     bytes_received = recv(i, buffer, 1024, 0);
                     if (bytes_received == 0)
                     { 

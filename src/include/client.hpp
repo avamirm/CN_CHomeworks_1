@@ -28,14 +28,17 @@ const std::string HELP =  "Please enter the number of your choice.\n"
                 "\u2022 8) Leaving Room \n" 
                 "\u2022 9) Rooms \n" 
                 "\u2022 10) Make The Room Empty \n" 
-                "\u2022 0) Logout \n" ;
+                "\u2022 11) Exit \n" 
+                "\u2022 0) Logout \n"; 
+        
 
 const std::string ROOM_HELP = "\u2022 Add -> add <roomNo> <maxCapacity> <price>\n" 
                               "\u2022 Modify -> modify <roomNo> <newMaxCapacity> <newPrice>\n" 
                               "\u2022 Remove -> remove <roomNo> \n" ;
 const std::string SIGNUP_IN_HELP = "Welcome to Nesava Hotel. You can signIn or signUp using commands below:\n"
                                    "\u2022 signIn -> signin <username> <password>\n" 
-                                   "\u2022 signUp -> signup <username> \n" ;
+                                   "\u2022 signUp -> signup <username> \n" 
+                                   "You can also exit by entering number 11\n";
 
 using json = nlohmann::json;
 
@@ -50,6 +53,7 @@ using json = nlohmann::json;
 #define ROOMS "9"
 #define LOGOUT "0"
 #define FREE_ROOM "10"
+#define EXIT "11"
 
 #define ADD "add"
 #define MODIFY "modify"
