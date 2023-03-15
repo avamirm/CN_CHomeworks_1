@@ -13,6 +13,7 @@ public:
     std::string getReserveDate();
     std::string getCheckOutDate();
     int getNumOfBeds();
+    void cancelBeds(int numOfBeds);
     // int getCheckIn();
     // int getCheckOut();
 private:

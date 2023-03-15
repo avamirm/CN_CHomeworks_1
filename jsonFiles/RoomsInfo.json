@@ -1,71 +1,71 @@
 {
-    "rooms": [
-        {
-            "freeCapacity": 89,
-            "isFull": false,
-            "maxCapacity": 89,
-            "price": 1,
-            "roomNo": 300,
-            "users": []
-        },
-        {
-            "freeCapacity": 0,
-            "isFull": false,
-            "maxCapacity": 1,
-            "price": 100,
-            "roomNo": 301,
-            "users": [
-                {
-                    "checkOutDate": "2023-02-28",
-                    "id": 2,
-                    "numOfBeds": 1,
-                    "reserveDate": "2023-02-27"
-                },
-                {
-                    "checkOutDate": "2023-02-26",
-                    "id": 3,
-                    "numOfBeds": 1,
-                    "reserveDate": "2023-02-25"
-                }
-            ]
-        },
-        {
-            "freeCapacity": 0,
-            "isFull": true,
-            "maxCapacity": 2,
-            "price": 100,
-            "roomNo": 201,
-            "users": [
-                {
-                    "checkOutDate": "2023-02-27",
-                    "id": 2,
-                    "numOfBeds": 2,
-                    "reserveDate": "2023-02-25"
-                }
-            ]
-        },
-        {
-            "freeCapacity": 50,
-            "isFull": false,
-            "maxCapacity": 50,
-            "price": 3,
-            "roomNo": 110,
-            "users": []
-        },
-        {
-            "freeCapacity": -95,
-            "isFull": false,
-            "maxCapacity": 100,
-            "price": 4,
-            "roomNo": 102,
-            "users": [
-                {
-                    "checkOutDate": "2023-02-27",
-                    "id": 1,
-                    "numOfBeds": 1,
-                    "reserveDate": "2023-02-25"
-                }
-            ]
-        }
-    ]
+  "rooms": [
+      {
+          "freeCapacity": 89,
+          "isFull": false,
+          "maxCapacity": 89,
+          "price": 1,
+          "roomNo": 300,
+          "users": []
+      },
+      {
+          "freeCapacity": 0,
+          "isFull": false,
+          "maxCapacity": 1,
+          "price": 100,
+          "roomNo": 301,
+          "users": [
+              {
+                  "checkOutDate": "2023-02-28",
+                  "id": 2,
+                  "numOfBeds": 1,
+                  "reserveDate": "2023-02-27"
+              },
+              {
+                  "checkOutDate": "2023-02-26",
+                  "id": 3,
+                  "numOfBeds": 1,
+                  "reserveDate": "2023-02-25"
+              }
+          ]
+      },
+      {
+          "freeCapacity": 0,
+          "isFull": true,
+          "maxCapacity": 2,
+          "price": 100,
+          "roomNo": 201,
+          "users": [
+              {
+                  "checkOutDate": "2023-02-27",
+                  "id": 2,
+                  "numOfBeds": 2,
+                  "reserveDate": "2023-02-25"
+              }
+          ]
+      },
+      {
+          "freeCapacity": 50,
+          "isFull": false,
+          "maxCapacity": 50,
+          "price": 3,
+          "roomNo": 110,
+          "users": []
+      },
+      {
+          "freeCapacity": -95,
+          "isFull": false,
+          "maxCapacity": 100,
+          "price": 4,
+          "roomNo": 102,
+          "users": [
+              {
+                  "checkOutDate": "2023-02-27",
+                  "id": 1,
+                  "numOfBeds": 1,
+                  "reserveDate": "2023-02-25"
+              }
+          ]
+      }
+  ]
 }

@@ -40,7 +40,10 @@ bool Room::getIsFull()
 
 void Room::setFreeCapacity(int freeCapacity)
 {
-    freeCapacity_ = freeCapacity;
+    if (maxCapacity_ > freeCapacity)
+        freeCapacity_ -= maxCapacity_ - freeCapacity;
+    else
+        freeCapacity_ += freeCapacity - maxCapacity_;
 }
 
 void Room::setPrice(int price)
@@ -50,7 +53,6 @@ void Room::setPrice(int price)
 
 void Room::setMaxCapacity(int maxCapacity)
 {
-    freeCapacity_ += (maxCapacity_ - maxCapacity );
     maxCapacity_ = maxCapacity;
 }
 

@@ -145,7 +145,7 @@ json Hotel::checkUsernameExistance(std::string username)
     json response;
     response[IS_ERROR] = false;
     response[ERROR_MSG] = USER_SIGNED_UP;
-    for (auto user: users_)
+    for (auto user : users_)
     {
         if (user.second.getName() == username)
         {
@@ -159,11 +159,11 @@ json Hotel::checkUsernameExistance(std::string username)
 json Hotel::viewRooms(bool isUserAdmin, bool isEmptyRoom)
 {
     json roomsInfo;
-
     roomsInfo["rooms"] = json::array();
     for (auto room : rooms_)
     {
-        if (!isEmptyRoom || (isEmptyRoom && !room.second.getIsFull()))
+
+        if (!isEmptyRoom || (isEmptyRoom && (!room.second.getIsFull() || room.second.getFreeCapacity() != 0)))
         {
             json roomInfo;
             roomInfo["roomNo"] = room.first;
@@ -196,19 +196,19 @@ void Hotel::setDate(date::year_month_day date)
     date_ = date;
 }
 
-bool Hotel::doesRoomExist(int roomNo)
+Room *Hotel::doesRoomExist(int roomNo)
 {
-    for (auto room: rooms_)
+    for (auto &room : rooms_)
         if (room.first == roomNo)
-            return true;
-    return false;
+            return &room.second;
+    return nullptr;
 }
 
 json Hotel::leavingRoom(User *user, int roomNo)
 {
     json response;
     response[IS_ERROR] = true;
-    if (!doesRoomExist(roomNo))
+    if (doesRoomExist(roomNo) == nullptr)
     {
         response[ERROR_MSG] = BAD_SEQUENCE_OF_COMMANDS;
         return response;
@@ -216,11 +216,11 @@ json Hotel::leavingRoom(User *user, int roomNo)
     auto itr = reservations_.find(roomNo);
     if (itr != reservations_.end())
     {
-        std::vector < Reservation> resCpy (reservations_[roomNo].begin(), reservations_[roomNo].end());
-        for (int i=resCpy.size()-1; i >= 0; i--)
+        std::vector<Reservation> resCpy(reservations_[roomNo].begin(), reservations_[roomNo].end());
+        for (int i = resCpy.size() - 1; i >= 0; i--)
         {
             date::year_month_day checkOutDate = convertDate(resCpy[i].getCheckOutDate());
-            if (resCpy[i].getUserId() == user->getId() && checkOutDate >= date_) 
+            if (resCpy[i].getUserId() == user->getId() && checkOutDate >= date_)
             {
                 reservations_[roomNo].erase(reservations_[roomNo].begin() + i);
                 response[IS_ERROR] = false;
@@ -233,6 +233,7 @@ json Hotel::leavingRoom(User *user, int roomNo)
     response[ERROR_MSG] = RESERVE_NOT_FOUND;
     return response;
 }
+
 date::year_month_day Hotel::convertDate(std::string date)
 {
     std::istringstream ss(date);
@@ -244,14 +245,14 @@ date::year_month_day Hotel::convertDate(std::string date)
 json Hotel::emptyRoom(int roomNo, bool isUserAdmin)
 {
     json response;
-    
+
     response[IS_ERROR] = true;
     if (!isUserAdmin)
     {
         response[ERROR_MSG] = ACCESS_DENIED;
         return response;
     }
-    if (!doesRoomExist(roomNo))
+    if (doesRoomExist(roomNo) == nullptr)
     {
         response[ERROR_MSG] = ROOM_NOT_FOUND;
         return response;
@@ -264,8 +265,8 @@ json Hotel::emptyRoom(int roomNo, bool isUserAdmin)
     auto itr = reservations_.find(roomNo);
     if (itr != reservations_.end())
     {
-        std::vector < Reservation> resCpy (reservations_[roomNo].begin(), reservations_[roomNo].end());
-        for (int i=resCpy.size()-1; i >= 0; i--)    
+        std::vector<Reservation> resCpy(reservations_[roomNo].begin(), reservations_[roomNo].end());
+        for (int i = resCpy.size() - 1; i >= 0; i--)
         {
             date::year_month_day reserveDate = convertDate(reservations_[roomNo][i].getReserveDate());
             date::year_month_day checkOutDate = convertDate(reservations_[roomNo][i].getCheckOutDate());
@@ -302,7 +303,7 @@ json Hotel::addNewRoom(json command)
     std::string roomNo = command["roomNo"];
     std::string maxCapacity = command["maxCap"];
     std::string price = command["price"];
-    if (doesRoomExist(std::stoi(roomNo)))
+    if (doesRoomExist(std::stoi(roomNo)) != nullptr)
     {
         respond[ERROR_MSG] = ROOM_EXIST;
         return respond;
@@ -327,18 +328,18 @@ json Hotel::modifyRoom(json command)
         respond[ERROR_MSG] = ROOM_NOT_FOUND;
         return respond;
     }
-    date:: year_month_day lasCheckOut = findLastCheckOut(roomNo);
-    date:: year_month_day tempDate = date_;
+    date::year_month_day lasCheckOut = findLastCheckOut(roomNo);
+    date::year_month_day tempDate = date_;
     while (tempDate < lasCheckOut)
     {
         int numOfFull = 0;
         auto itr = reservations_.find(roomNo);
         if (itr != reservations_.end())
         {
-            for (auto reserve: reservations_[roomNo])
+            for (auto reserve : reservations_[roomNo])
             {
-                date:: year_month_day checkOut = convertDate(reserve.getCheckOutDate());
-                date:: year_month_day checkIn = convertDate(reserve.getReserveDate());
+                date::year_month_day checkOut = convertDate(reserve.getCheckOutDate());
+                date::year_month_day checkIn = convertDate(reserve.getReserveDate());
                 if (tempDate >= checkIn && tempDate < checkOut)
                     numOfFull += reserve.getNumOfBeds();
             }
@@ -351,6 +352,7 @@ json Hotel::modifyRoom(json command)
         tempDate = date::sys_days(tempDate) + date::days(1);
     }
 
+    room->second.setFreeCapacity(maxCapacity);
     room->second.setMaxCapacity(maxCapacity);
     room->second.setPrice(price);
     respond[IS_ERROR] = false;
@@ -359,7 +361,7 @@ json Hotel::modifyRoom(json command)
     return respond;
 }
 
-void Hotel::setUserFd(User* user, int userFd)
+void Hotel::setUserFd(User *user, int userFd)
 {
     user->setFd(userFd);
 }
@@ -370,7 +372,7 @@ date::year_month_day Hotel::findLastCheckOut(int roomNo)
     auto itr = reservations_.find(roomNo);
     if (itr != reservations_.end())
     {
-        for (auto reserve: reservations_[roomNo])
+        for (auto reserve : reservations_[roomNo])
         {
             date::year_month_day checkOutDate = convertDate(reserve.getCheckOutDate());
             if (checkOutDate > lastCheckOut)
@@ -385,7 +387,7 @@ json Hotel::removeRoom(json command)
     json respond;
     respond[IS_ERROR] = true;
     int roomNo = std::stoi(command["roomNo"].get<std::string>());
-    if (!doesRoomExist(roomNo))
+    if (doesRoomExist(roomNo) == nullptr)
     {
         respond[ERROR_MSG] = ROOM_NOT_FOUND;
         return respond;
@@ -395,7 +397,7 @@ json Hotel::removeRoom(json command)
     {
         respond[ERROR_MSG] = ROOM_IS_FULL;
         return respond;
-    } 
+    }
     rooms_.erase(roomNo);
     respond[IS_ERROR] = false;
     respond[ERROR_MSG] = SUCCESSFULLY_DELETED;
@@ -403,7 +405,7 @@ json Hotel::removeRoom(json command)
     return respond;
 }
 
-json Hotel::logoutUser(User* user)
+json Hotel::logoutUser(User *user)
 {
     user->logout();
     json response;
@@ -422,18 +424,20 @@ json Hotel::passDay(int daysNo, bool isUserAdmin)
         return response;
     }
     date_ = date::sys_days(date_) + date::days(daysNo);
-    for (auto room: rooms_)
+    for (auto room : rooms_)
     {
-        std::vector < Reservation> resCpy (reservations_[room.first].begin(), reservations_[room.first].end());
-        for (int i = resCpy.size() -1; i >= 0; i--)
+        auto itr = reservations_.find(room.first);
+        if (itr != reservations_.end())
         {
-            std::istringstream ss(resCpy[i].getCheckOutDate());
-            date::year_month_day chechOutDate;
-            ss >> date::parse("%F", chechOutDate);
-            if (chechOutDate < date_)
+            std::vector<Reservation> resCpy(reservations_[room.first].begin(), reservations_[room.first].end());
+            for (int i = resCpy.size() - 1; i >= 0; i--)
             {
-                room.second.increaseSpace(reservations_[room.first][i].getNumOfBeds());
-                reservations_[room.first].erase(reservations_[room.first].begin() + i);
+                date::year_month_day chechOutDate = convertDate(resCpy[i].getCheckOutDate());
+                if (chechOutDate < date_)
+                {
+                    room.second.increaseSpace(reservations_[room.first][i].getNumOfBeds());
+                    reservations_[room.first].erase(reservations_[room.first].begin() + i);
+                }
             }
         }
     }
@@ -441,7 +445,7 @@ json Hotel::passDay(int daysNo, bool isUserAdmin)
     return response;
 }
 
-bool Hotel::doesHaveTimeConflict(date::year_month_day reserveDate1, date::year_month_day checkOutDate1, 
+bool Hotel::doesHaveTimeConflict(date::year_month_day reserveDate1, date::year_month_day checkOutDate1,
                                  date::year_month_day reserveDate2, date::year_month_day checkOutDate2)
 {
     return (reserveDate1 <= reserveDate2 && checkOutDate1 <= checkOutDate2) ||
@@ -460,16 +464,21 @@ json Hotel::booking(User *user, json command)
     std::string checkOutDate = command["checkOutDate"];
     date::year_month_day checkIn = convertDate(checkInDate);
     date::year_month_day checkOut = convertDate(checkOutDate);
+    if (checkIn < date_ || checkOut < date_)
+    {
+        respond[ERROR_MSG] = BAD_SEQUENCE_OF_COMMANDS;
+        return respond;
+    }
 
     respond[IS_ERROR] = true;
-    if (!doesRoomExist(roomNo))
+    Room *foundRoom = doesRoomExist(roomNo);
+    if (foundRoom == nullptr)
     {
         respond[ERROR_MSG] = ROOM_NOT_FOUND;
         return respond;
     }
 
-    Room foundRoom = rooms_.find(roomNo)->second;
-    int roomPrice = foundRoom.getPrice();
+    int roomPrice = foundRoom->getPrice();
 
     if (user->getMoney() < roomPrice * numOfBeds)
     {
@@ -478,7 +487,6 @@ json Hotel::booking(User *user, json command)
     }
 
     date::year_month_day tempDay = checkIn;
-    
 
     while (tempDay <= checkOut)
     {
@@ -491,90 +499,101 @@ json Hotel::booking(User *user, json command)
                 date::year_month_day resCheckIn = convertDate(reserve.getReserveDate());
                 date::year_month_day resCheckOut = convertDate(reserve.getCheckOutDate());
                 if (tempDay >= resCheckIn && tempDay < resCheckOut)
-                    numOfFullBeds += reserve.getNumOfBeds();   
+                    numOfFullBeds += reserve.getNumOfBeds();
             }
         }
-        if (foundRoom.getMaxCapacity() - numOfFullBeds < numOfBeds)
+        if (foundRoom->getMaxCapacity() - numOfFullBeds < numOfBeds)
         {
             respond[ERROR_MSG] = ROOM_IS_FULL;
             return respond;
         }
         tempDay = date::sys_days(tempDay) + date::days(1);
     }
-   
+
     user->pay(numOfBeds * roomPrice);
-    foundRoom.fill(numOfBeds);
+    foundRoom->fill(numOfBeds);
     respond[IS_ERROR] = false;
+    addReservation(roomNo, user->getId(), checkInDate, checkOutDate, numOfBeds);
+    updateUsersFile();
     updateRoomsFile();
     return respond;
 }
 
-json Hotel::showUserReserves(User* user)
+json Hotel::showUserReserves(User *user)
 {
     json reservations;
     reservations["user"] = json::array();
     reservations["isEmpty"] = true;
-    for (auto room: rooms_)
+    for (auto room : rooms_)
     {
-        for (auto reserve: reservations_[room.first])
+        auto itr = reservations_.find(room.first);
+        if (itr != reservations_.end())
         {
-            if (reserve.getUserId() == user->getId())
+            for (auto reserve : reservations_[room.first])
             {
-                json info;
-                info["reserveDate"] = reserve.getReserveDate();
-                info["checkOutDate"] = reserve.getCheckOutDate();
-                info["roomNo"] = room.first;
-                info["numOfBeds"] = reserve.getNumOfBeds();
-                reservations["user"].push_back(info);
-                reservations["isEmpty"] = false;
+                if (reserve.getUserId() == user->getId())
+                {
+                    json info;
+                    info["reserveDate"] = reserve.getReserveDate();
+                    info["checkOutDate"] = reserve.getCheckOutDate();
+                    info["roomNo"] = room.first;
+                    info["numOfBeds"] = reserve.getNumOfBeds();
+                    reservations["user"].push_back(info);
+                    reservations["isEmpty"] = false;
+                    return reservations;
+                }
             }
         }
     }
+    reservations[ERROR_MSG] = RESERVE_NOT_FOUND;
     return reservations;
 }
 
-json Hotel::canceling(User* user, json command)
+json Hotel::canceling(User *user, json command)
 {
-   int roomNo = stoi(command["roomNo"].get<std::string>());
-   int numOfBeds = stoi(command["numOfBeds"].get<std::string>());
-   json response;
-   response[IS_ERROR] = true;
-   if (!doesRoomExist(roomNo))
-   {
+    int roomNo = stoi(command["roomNo"].get<std::string>());
+    int numOfBeds = stoi(command["numOfBeds"].get<std::string>());
+    json response;
+    response[IS_ERROR] = true;
+    Room *foundRoom = doesRoomExist(roomNo);
+    if (foundRoom == nullptr)
+    {
         response[ERROR_MSG] = ROOM_NOT_FOUND;
         return response;
-   }
+    }
     auto itr = reservations_.find(roomNo);
     if (itr != reservations_.end())
     {
-        std::vector < Reservation> resCpy (reservations_[roomNo].begin(), reservations_[roomNo].end());
-        for (int i = resCpy.size()-1; i >=0; i--)
+        std::vector<Reservation> resCpy(reservations_[roomNo].begin(), reservations_[roomNo].end());
+        for (int i = resCpy.size() - 1; i >= 0; i--)
         {
             date::year_month_day reserveDate = convertDate(reservations_[roomNo][i].getReserveDate());
             if (reservations_[roomNo][i].getUserId() == user->getId() && reservations_[roomNo][i].getNumOfBeds() >= numOfBeds && date_ < reserveDate)
             {
                 response[IS_ERROR] = false;
                 response[ERROR_MSG] = SUCCESSFULLY_DONE;
-                Room room = rooms_.find(roomNo)->second;
-                room.increaseSpace(numOfBeds);
-                user->getBackMoney(numOfBeds*room.getPrice());
-                reservations_[roomNo].erase(reservations_[roomNo].begin()+i);
+                foundRoom->increaseSpace(numOfBeds);
+                user->getBackMoney(numOfBeds * foundRoom->getPrice());
+                if (reservations_[roomNo][i].getNumOfBeds() == numOfBeds)
+                    reservations_[roomNo].erase(reservations_[roomNo].begin() + i);
+                else
+                    reservations_[roomNo][i].cancelBeds(numOfBeds);
                 updateRoomsFile();
                 return response;
             }
         }
     }
-   
-   response[ERROR_MSG] = RESERVE_NOT_FOUND;
-   return response;
+
+    response[ERROR_MSG] = RESERVE_NOT_FOUND;
+    return response;
 }
 
 void Hotel::updateRoomsFile()
 {
-    std::ofstream file(ROOMS_FILE); 
+    std::ofstream file(ROOMS_FILE);
     json rooms;
     rooms["rooms"] = json::array();
-    for (auto room: rooms_)
+    for (auto room : rooms_)
     {
         json r;
         r["roomNo"] = room.first;
@@ -583,15 +602,20 @@ void Hotel::updateRoomsFile()
         r["maxCapacity"] = room.second.getMaxCapacity();
         r["freeCapacity"] = room.second.getFreeCapacity();
         r["users"] = json::array();
-        for (auto reserve: reservations_[room.first])
+        auto itr = reservations_.find(room.first);
+        if (itr != reservations_.end())
         {
-            json user;
-            user["id"] = reserve.getUserId();
-            user["numOfBeds"] = reserve.getNumOfBeds();
-            user["reserveDate"] = reserve.getReserveDate();
-            user["checkOutDate"] = reserve.getCheckOutDate();
-            r["users"].push_back(user);
+            for (auto reserve : reservations_[room.first])
+            {
+                json user;
+                user["id"] = reserve.getUserId();
+                user["numOfBeds"] = reserve.getNumOfBeds();
+                user["reserveDate"] = reserve.getReserveDate();
+                user["checkOutDate"] = reserve.getCheckOutDate();
+                r["users"].push_back(user);
+            }
         }
+
         rooms["rooms"].push_back(r);
     }
     file << rooms.dump(4);
@@ -602,7 +626,7 @@ void Hotel::updateUsersFile()
     std::ofstream file(USERS_FILE);
     json users;
     users["users"] = json::array();
-    for (auto user: users_)
+    for (auto user : users_)
     {
         json u;
         u["id"] = user.first;

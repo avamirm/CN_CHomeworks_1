@@ -37,3 +37,8 @@ int Reservation::getUserId()
 {
     return userId_;
 }
+
+void Reservation::cancelBeds(int numOfBeds)
+{
+    numOfBeds_ -= numOfBeds;
+}

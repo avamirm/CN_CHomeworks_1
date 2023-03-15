@@ -45,20 +45,21 @@ public:
     void addRooms(json &rooms);
     void addUsers(json &users);
     void setDate(date::year_month_day date);
-    void setUserFd(User* user, int userFd);
+    void setUserFd(User *user, int userFd);
     json checkUsernameExistance(std::string username);
-    bool doesRoomExist(int roomNo);
-    json logoutUser(User* user);
+    Room *doesRoomExist(int roomNo);
+    json logoutUser(User *user);
     json passDay(int daysNo, bool isUserAdmin);
     date::year_month_day convertDate(std::string date);
     json booking(User *user, json command);
-    bool doesHaveTimeConflict(date::year_month_day reserveDate1, date::year_month_day checkOutDate1, 
-                                 date::year_month_day reserveDate2, date::year_month_day checkOutDate2);
-    json showUserReserves(User* user);
-    json canceling(User* user, json command);
+    bool doesHaveTimeConflict(date::year_month_day reserveDate1, date::year_month_day checkOutDate1,
+                              date::year_month_day reserveDate2, date::year_month_day checkOutDate2);
+    json showUserReserves(User *user);
+    json canceling(User *user, json command);
     void updateRoomsFile();
     void updateUsersFile();
     date::year_month_day findLastCheckOut(int roomNo);
+
 private:
     std::unordered_map<int, User> users_;
     std::unordered_map<int, std::vector<Reservation>> reservations_;

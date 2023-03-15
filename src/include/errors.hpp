@@ -8,7 +8,9 @@
 #define SUCCESSFULLY_DELETED "Success 106: Successfully deleted."
 #define LOW_BALANCE "Error 108: Your account balance is not enough."
 #define ROOM_IS_FULL "Error 109: The room capacity is full."
+#define SUCCESSFULLY_DONE "Success 110: Successfully done."
 #define ROOM_EXIST "Error 111: This room already exists."
+#define LOGOUT_SUCCESSFULLY "Success 201: User logged out successfully."
 #define USER_LOGGED_IN "Success 230: User logged in."
 #define USER_SUCCESSFULLY_SIGN_UP "Success 231: User successfully signed up."
 #define USER_SIGNED_UP "Success 311: User Signed up. Enter your password, purse, phone and address."
@@ -20,8 +22,7 @@
 #define INVALID_USERNAME_OR_PASSWORD "Error 430: Invalid username or password."
 #define USER_EXISTED "Error 451: User already existed!"
 #define BAD_SEQUENCE_OF_COMMANDS "Error 503: Bad sequence of commands."
-#define LOGOUT_SUCCESSFULLY "Success 201: User logged out successfully."
-#define SUCCESSFULLY_DONE "Success 110: Successfully done."
+
 #define IS_ERROR "isError"
 #define ERROR_MSG "errorMessage"
 #endif
