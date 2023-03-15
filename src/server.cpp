@@ -14,7 +14,6 @@ Server::Server()
     commandHandler_.setUsers(users);
     logger_ = Logger();
     logger_.setPath(SERVER_LOGS);
-    cout << "Server is running on port " << port_ << endl;
 }
 
 void Server::readPortHostnameConfig()
@@ -65,7 +64,11 @@ int Server::setupServer()
     address.sin_addr.s_addr = inet_addr(hostname_.c_str());
     address.sin_port = htons(port_);
 
-    bind(server_fd, (struct sockaddr *)&address, sizeof(address));
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) == -1)
+    {
+        perror("port");
+        return -1;
+    }
 
     listen(server_fd, 4);
 
@@ -142,7 +145,9 @@ void Server::start()
     fd_set master_set, working_set;
 
     server_fd = setupServer();
-
+    if (server_fd == -1)
+        return;
+    std::cout << "Server is running on port " << port_ << std::endl;
     FD_ZERO(&master_set);
     max_sd = server_fd;
     FD_SET(server_fd, &master_set);
